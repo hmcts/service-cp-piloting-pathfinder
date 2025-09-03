@@ -1,0 +1,35 @@
+server:
+  port: 4550
+  shutdown: "graceful"
+
+management:
+  endpoint:
+    health:
+      show-details: "always"
+      # group:
+      #  readiness:
+      #   include: "db"
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: health, info, prometheus
+
+springdoc:
+  packagesToScan: uk.gov.hmcts.cp.controllers
+  writer-with-order-by-keys: true
+
+spring:
+  config:
+    import: "optional:configtree:/mnt/secrets/rpe/"
+  application:
+    name: service-cp-refdata-courthearing-judges
+#  azure:
+#    cosmos:
+#      endpoint: ${COSMOSDB_ENDPOINT}
+#      key: ${COSMOSDB_KEY}
+#      database: ${COSMOSDB_DATABASE}
+
+azure:
+  application-insights:
+    instrumentation-key: ${rpe.AppInsightsInstrumentationKey:00000000-0000-0000-0000-000000000000}
