@@ -14,11 +14,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-
       - uses: pmd/pmd-github-action@v2
         with:
           rulesets: '.github/pmd-ruleset.xml'
