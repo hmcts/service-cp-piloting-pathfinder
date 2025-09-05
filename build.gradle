@@ -67,10 +67,10 @@ tasks.withType(JavaExec).configureEach {
 }
 
 tasks.named('test') {
+  useJUnitPlatform{}
   // useJUnitPlatform{
   //     excludeTags 'pact'
   // }
-  systemProperty 'API_SPEC_VERSION', project.version
   failFast = true
   // Mockito must be added as an agent, see:
   // https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
@@ -231,10 +231,10 @@ application {
 }
 
 ext {
-apiCourtScheduleVersion = "0.4.8"
-log4JVersion = "2.24.3"
-logbackVersion = "1.5.18"
-lombokVersion = "1.18.38"
+  apiCourtScheduleVersion = "0.4.8"
+  log4JVersion = "2.24.3"
+  logbackVersion = "1.5.18"
+  lombokVersion = "1.18.38"
 }
 
 // tasks.named('processPactVerificationTestResources') {
