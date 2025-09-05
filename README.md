@@ -1,11 +1,9 @@
 # HMCTS API Marketplace Service Piloting Pathfinder
 
-This repository provides a implementation for cross-cutting concerns like 
+This repository provides an example for implementing a cross-cutting concern like 
 - Logging
 - JWT decryption
 - Authorisation of resource endpoints.
-
-[![CI Build and Publish Increments Draft](
 
 ## 🚀 Installation
 
