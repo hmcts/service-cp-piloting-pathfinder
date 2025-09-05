@@ -148,6 +148,7 @@ jobs:
             -Dpact.env="$PACT_ENV"
 
       - uses: hmcts/pact-can-i-deploy@main
+        if: ${{ !inputs.pact_ignore }}
         with:
           pact_broker_token: ${{ secrets.PACT_BROKER_TOKEN }}
           pacticipant: ${{ inputs.pacticipant }}
