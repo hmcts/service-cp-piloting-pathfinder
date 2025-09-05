@@ -31,7 +31,7 @@ class RootControllerIntegrationIT {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content()
-                        .string(containsString("Welcome to service-hmcts-marketplace-springboot-template")));
+                        .string(containsString("Welcome to service-hmcts-marketplace-piloting-pathfinder")));
     }
 
     @DisplayName("Actuator health status should be UP")

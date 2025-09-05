@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  service-hmcts-marketplace-springboot-template:
+  service-cp-piloting-pathfinder:
     env_file:
       - .env
     build:
@@ -30,4 +30,4 @@ services:
 
 networks:
   service-network:
-    name: service-hmcts-marketplace-springboot-template-network
+    name: service-cp-piloting-pathfinder-network
