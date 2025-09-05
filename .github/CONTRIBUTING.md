@@ -5,7 +5,7 @@ as we have some expectations related to the content and quality of change sets.
 
 ## What you should know about this application
 
-This project is a template for demonstrating cross-cutting concerns for all apis. It aims to speed up the creation of new Spring APIs in HMCTS
+This project is a template Spring Boot application. It aims to speed up the creation of new Spring APIs in HMCTS
 projects, by serving as the initial setup of each API.
 
 ## Before contributing
