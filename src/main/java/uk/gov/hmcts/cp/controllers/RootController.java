@@ -23,6 +23,6 @@ public class RootController {
      */
     @GetMapping("/")
     public ResponseEntity<String> welcome() {
-        return ok("Welcome to service-hmcts-marketplace-springboot-template");
+        return ok("Welcome to service-hmcts-marketplace-piloting-pathfinder");
     }
 }

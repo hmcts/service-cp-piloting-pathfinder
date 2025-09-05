@@ -7,7 +7,6 @@ plugins {
   id 'maven-publish'
   id "com.github.ben-manes.versions" version "0.52.0"
   id "org.cyclonedx.bom" version "2.3.1"
-  id "au.com.dius.pact" version "4.6.17"
 }
 
 group = 'uk.gov.hmcts.cp'
@@ -34,21 +33,11 @@ sourceSets {
     }
     resources.srcDir file('src/integrationTest/resources')
   }
-  pactVerificationTest {
-    java {
-      compileClasspath += sourceSets.main.output
-      runtimeClasspath += sourceSets.main.output
-    }
-    resources.srcDir file('src/pactVerificationTest/resources')
-  }
 }
 
 configurations {
   integrationTestImplementation.extendsFrom testImplementation
   integrationTestRuntimeOnly.extendsFrom runtimeOnly
-
-  pactVerificationTestImplementation.extendsFrom testImplementation
-  pactVerificationTestRuntimeOnly.extendsFrom runtimeOnly
 
   // Ensure testRuntimeClasspath can be resolved for agent injection
   testRuntimeClasspath {
@@ -67,9 +56,7 @@ tasks.withType(JavaExec).configureEach {
 }
 
 tasks.named('test') {
-  useJUnitPlatform{
-    excludeTags 'pact'
-  }
+  useJUnitPlatform{}
   systemProperty 'API_SPEC_VERSION', project.version
   failFast = true
   // Mockito must be added as an agent, see:
@@ -100,31 +87,6 @@ tasks.register('integration', Test) {
     exceptionFormat = 'full'
     showStandardStreams = true
   }
-  reports {
-    junitXml.required.set(true)
-    html.required.set(true)
-  }
-}
-
-tasks.register('pactVerificationTest', Test) {
-  description = "Runs Pact provider verification tests"
-  group = "Verification"
-  testClassesDirs = sourceSets.pactVerificationTest.output.classesDirs
-  classpath = sourceSets.pactVerificationTest.runtimeClasspath
-  useJUnitPlatform {
-    includeTags 'pact'
-  }
-  failFast = true
-
-  def sysOrEnv = { String key ->
-    System.getProperty(key) ?: System.getenv(key.toUpperCase().replace('.', '_'))
-  }
-  systemProperty 'pact.broker.url', sysOrEnv('pact.broker.url')
-  systemProperty 'pact.broker.token', sysOrEnv('pact.broker.token')
-  systemProperty 'pact.provider.version', sysOrEnv('pact.provider.version')
-  systemProperty 'pact.provider.branch', sysOrEnv('pact.provider.branch')
-  systemProperty 'pact.verifier.publishResults', sysOrEnv('pact.verifier.publishResults')
-  systemProperty 'pact.env', sysOrEnv( 'pact.env') ?: 'local'
   reports {
     junitXml.required.set(true)
     html.required.set(true)
@@ -237,10 +199,6 @@ ext {
   lombokVersion = "1.18.38"
 }
 
-tasks.named('processPactVerificationTestResources') {
-  duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-}
-
 
 dependencies {
   implementation "uk.gov.hmcts.cp:api-cp-crime-schedulingandlisting-courtschedule:$apiCourtScheduleVersion"
@@ -281,6 +239,4 @@ dependencies {
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
 
-  testImplementation 'au.com.dius.pact.provider:junit5:4.6.17'
-  testImplementation 'au.com.dius.pact.provider:spring6:4.6.17'
 }
