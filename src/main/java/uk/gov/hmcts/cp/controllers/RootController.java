@@ -1,16 +1,24 @@
 package uk.gov.hmcts.cp.controllers;
 
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.cp.service.DummyService;
 
 import static org.springframework.http.ResponseEntity.ok;
 
 /**
  * Default endpoints per application.
  */
+@AllArgsConstructor
 @RestController
+@Slf4j
 public class RootController {
+
+    DummyService dummyService;
 
     /**
      * Root GET endpoint.
@@ -23,6 +31,7 @@ public class RootController {
      */
     @GetMapping("/")
     public ResponseEntity<String> welcome() {
-        return ok("Welcome to service-hmcts-marketplace-piloting-pathfinder");
+        log.info("Hello got userName:{}", MDC.get("authUserName"));
+        return ok(dummyService.dummyMethod());
     }
 }
