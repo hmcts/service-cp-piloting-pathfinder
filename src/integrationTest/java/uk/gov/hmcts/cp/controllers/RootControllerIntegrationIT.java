@@ -1,11 +1,11 @@
 package uk.gov.hmcts.cp.controllers;
 
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -19,14 +19,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @AutoConfigureMockMvc
+@TestPropertySource(properties = {"auth.filter.enabled=false"})
 class RootControllerIntegrationIT {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @DisplayName("Should welcome upon root request with 200 response code")
     @Test
-    void shouldCallRootAndGet200() throws Exception {
+    void root_endpoint_should_return200() throws Exception {
         mockMvc.perform(get("/"))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -34,9 +34,8 @@ class RootControllerIntegrationIT {
                         .string(containsString("Welcome to service-hmcts-marketplace-piloting-pathfinder")));
     }
 
-    @DisplayName("Actuator health status should be UP")
     @Test
-    void shouldCallActuatorAndGet200() throws Exception {
+    void health_endpoint_should_return_UP() throws Exception {
         mockMvc.perform(get("/health"))
                 .andDo(print())
                 .andExpect(status().isOk())

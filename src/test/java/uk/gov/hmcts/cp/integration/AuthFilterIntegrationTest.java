@@ -13,7 +13,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static uk.gov.hmcts.cp.filter.RequestFilter.JWT_TOKEN_HEADER;
+import static uk.gov.hmcts.cp.filter.AuthFilter.JWT_TOKEN_HEADER;;
 
 @SpringBootTest
 @AutoConfigureMockMvc
