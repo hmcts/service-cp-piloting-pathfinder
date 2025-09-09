@@ -2,10 +2,10 @@ package uk.gov.hmcts.cp.controllers;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.cp.filter.AuthDetails;
 import uk.gov.hmcts.cp.service.DummyService;
 
 import static org.springframework.http.ResponseEntity.ok;
@@ -18,7 +18,8 @@ import static org.springframework.http.ResponseEntity.ok;
 @Slf4j
 public class RootController {
 
-    DummyService dummyService;
+    private DummyService dummyService;
+    private AuthDetails authDetails;
 
     /**
      * Root GET endpoint.
@@ -31,7 +32,8 @@ public class RootController {
      */
     @GetMapping("/")
     public ResponseEntity<String> welcome() {
-        log.info("Hello got userName:{}", MDC.get("authUserName"));
-        return ok(dummyService.dummyMethod());
+        log.info("Auth filter added userName:{}", authDetails.getUserName());
+        dummyService.dummyMethod();
+        return ok(authDetails.getUserName());
     }
 }
