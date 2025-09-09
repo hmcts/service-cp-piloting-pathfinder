@@ -28,7 +28,7 @@ class JWTTokenFilterTest {
     @Mock
     private FilterChain filterChain;
     @Mock
-    private JwtTokenProvider jwtTokenProvider;
+    private JwtTokenService jwtTokenService;
 
     @InjectMocks
     private JWTTokenFilter jwtTokenFilter;
@@ -44,7 +44,7 @@ class JWTTokenFilterTest {
     void shouldPassThroughIfPassedJwt() throws ServletException, IOException, InvalidJWTException {
         final String jwt = "dummy-token";
         when(request.getHeader(JWT_TOKEN_HEADER)).thenReturn(jwt);
-        when(jwtTokenProvider.validateToken(jwt)).thenReturn(true);
+        when(jwtTokenService.validateToken(jwt)).thenReturn(true);
         jwtTokenFilter.doFilterInternal(request, response, filterChain);
         verify(filterChain).doFilter(request, response);
     }

@@ -24,7 +24,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JWTTokenFilter extends OncePerRequestFilter {
     public final static String JWT_TOKEN_HEADER = "jwt";
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenService jwtTokenService;
     private final PathMatcher pathMatcher;
 
     @Override
@@ -38,7 +38,7 @@ public class JWTTokenFilter extends OncePerRequestFilter {
         }
 
         try {
-            jwtTokenProvider.validateToken(jwt);
+            jwtTokenService.validateToken(jwt);
         } catch (InvalidJWTException e) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, e.getMessage());
         }

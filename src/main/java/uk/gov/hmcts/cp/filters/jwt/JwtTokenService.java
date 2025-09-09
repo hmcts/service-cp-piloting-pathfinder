@@ -1,5 +1,8 @@
 package uk.gov.hmcts.cp.filters.jwt;
 
+import java.time.Duration;
+import java.util.Date;
+
 import javax.crypto.SecretKey;
 
 import io.jsonwebtoken.ExpiredJwtException;
@@ -15,18 +18,22 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class JwtTokenProvider {
+public class JwtTokenService {
+
+    private static final Duration ONE_HOUR = Duration.ofHours(1);
 
     private final String secretKey;
 
-    public JwtTokenProvider(@Value("${jwt.secretKey}") String secretKey) {
+    public JwtTokenService(@Value("${jwt.secretKey}") String secretKey) {
         this.secretKey = secretKey;
     }
 
     public boolean validateToken(String token) throws InvalidJWTException {
         try {
             Jwts.parser()
-                    .verifyWith((getSecretSigningKey())).build().parse(token);
+                .verifyWith((getSecretSigningKey()))
+                .build()
+                .parse(token);
         } catch (SignatureException ex) {
             log.error("Invalid signature/claims", ex);
             throw new InvalidJWTException("Invalid signature:" + ex.getMessage());
@@ -49,8 +56,24 @@ public class JwtTokenProvider {
         return true;
     }
 
-    SecretKey getSecretSigningKey() {
+    public String createToken() {
+        return Jwts.builder()
+                .subject("testUser")
+                .issuedAt(new Date())
+                .claim("scope", "read write")
+                .expiration(expiryDateAfterOneHour())
+                .signWith(getSecretSigningKey())
+                .compact();
+    }
+
+    private SecretKey getSecretSigningKey() {
         byte[] keyBytes = Decoders.BASE64URL.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
+
+    private Date expiryDateAfterOneHour() {
+        return Date.from(new Date().toInstant().plus(ONE_HOUR));
+    }
+
+
 }
