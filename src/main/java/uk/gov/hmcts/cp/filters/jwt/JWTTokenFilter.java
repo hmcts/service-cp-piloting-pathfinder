@@ -29,7 +29,6 @@ public class JWTTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response, final FilterChain filterChain) throws ServletException, IOException {
-        log.info("JWTTokenFilter: Called for url:{}", request.getRequestURI());
 
         final String jwt = request.getHeader(JWT_TOKEN_HEADER);
 
@@ -38,15 +37,11 @@ public class JWTTokenFilter extends OncePerRequestFilter {
             throw new HttpClientErrorException(HttpStatus.UNAUTHORIZED, "No jwt token passed");
         }
 
-        log.info("header has jwt present: {}", jwt);
-
         try {
             jwtTokenProvider.validateToken(jwt);
         } catch (InvalidJWTException e) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
-
-        log.info("Proceeding to next filter");
 
         filterChain.doFilter(request, response);
     }

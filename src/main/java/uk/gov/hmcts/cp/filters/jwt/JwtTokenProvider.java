@@ -20,7 +20,6 @@ public class JwtTokenProvider {
     private final String secretKey;
 
     public JwtTokenProvider(@Value("${jwt.secretKey}") String secretKey) {
-        log.debug("Secret key: {}", secretKey);
         this.secretKey = secretKey;
     }
 
