@@ -3,7 +3,7 @@ package uk.gov.hmcts.cp.filters.jwt;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.Duration;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
@@ -17,15 +17,17 @@ import org.junit.jupiter.api.Test;
 
 class JwtTokenProviderTest {
 
-    final String secretKey = "it-must-be-a-string-secret-at-least-256-bits-long";
-    final JwtTokenProvider provider = new JwtTokenProvider(secretKey);
-    final SecretKey signingKey = provider.getSecretSigningKey();
+    private final String secretKey = "it-must-be-a-string-secret-at-least-256-bits-long";
+    private final JwtTokenProvider provider = new JwtTokenProvider(secretKey);
+    private final SecretKey signingKey = provider.getSecretSigningKey();
+
+    private final Date futureDate = Date.from(Instant.now().plus(1, ChronoUnit.HOURS));
+    private final Date expiredDate = Date.from(Instant.now().minus(1, ChronoUnit.HOURS));
 
     @DisplayName("A valid JWT must be detected as valid")
     @Test
     public void shouldValidateJWT() throws Exception {
-        final String validJWT = createToken(signingKey, expiryDateInFuture());
-
+        final String validJWT = createToken(signingKey, futureDate);
         boolean isValid = provider.validateToken(validJWT);
 
         assertTrue(isValid);
@@ -34,10 +36,7 @@ class JwtTokenProviderTest {
     @DisplayName("An expired JWT must be detected as invalid")
     @Test
     public void shouldInvalidateExpiredJWT() {
-        final Date now = new Date();
-        final long oneHour = Duration.ofHours(1L).get(ChronoUnit.SECONDS)*1000;
-        final Date expiryDate = new Date(now.getTime() - oneHour);
-        final String expiredJWT = createToken(signingKey, expiryDate);
+        final String expiredJWT = createToken(signingKey, expiredDate);
 
         assertThatExceptionOfType(InvalidJWTException.class)
                 .isThrownBy(() -> provider.validateToken(expiredJWT))
@@ -62,7 +61,7 @@ class JwtTokenProviderTest {
                 .subject("testUser")
                 .issuedAt(new Date())
                 .claim("scope", "read write")
-                .expiration(expiryDateInFuture())
+                .expiration(futureDate)
                 .compact();
 
         assertThatExceptionOfType(InvalidJWTException.class)
@@ -88,16 +87,8 @@ class JwtTokenProviderTest {
                 .withMessageContaining("JWT token is empty");
     }
 
-
-    private static Date expiryDateInFuture() {
-        Date now = new Date();
-        final long oneHour = Duration.ofHours(1L).get(ChronoUnit.SECONDS)*1000;
-        return new Date(now.getTime() + oneHour);
-    }
-
     private String createToken(SecretKey secretKey) {
-        final Date expiryDate = expiryDateInFuture();
-        return createToken(secretKey, expiryDate);
+        return createToken(secretKey, futureDate);
     }
 
     private String createToken(SecretKey secretKey, Date expiryDate) {
@@ -110,5 +101,6 @@ class JwtTokenProviderTest {
                 .signWith(secretKey)
                 .compact();
     }
+
 
 }

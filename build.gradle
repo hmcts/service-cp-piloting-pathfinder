@@ -252,7 +252,6 @@ dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-actuator'
   implementation 'org.springframework.boot:spring-boot-starter-aop'
   implementation 'org.springframework.boot:spring-boot-starter-json'
-  implementation 'org.springframework.boot:spring-boot-starter-security'
 
   implementation platform('io.micrometer:micrometer-tracing-bom:latest.release')
   implementation 'io.micrometer:micrometer-tracing'
