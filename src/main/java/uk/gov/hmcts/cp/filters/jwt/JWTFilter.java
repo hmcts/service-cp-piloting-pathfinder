@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -21,11 +22,12 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class JWTTokenFilter extends OncePerRequestFilter {
+public class JWTFilter extends OncePerRequestFilter {
     public final static String JWT_TOKEN_HEADER = "jwt";
 
-    private final JwtTokenService jwtTokenService;
+    private final JWTService jwtService;
     private final PathMatcher pathMatcher;
+    private final ObjectProvider<AuthDetails> jwtProvider;
 
     @Override
     protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response, final FilterChain filterChain) throws ServletException, IOException {
@@ -33,12 +35,16 @@ public class JWTTokenFilter extends OncePerRequestFilter {
         final String jwt = request.getHeader(JWT_TOKEN_HEADER);
 
         if (jwt == null) {
-            log.error("JWTTokenFilter expected header {} not passed", JWT_TOKEN_HEADER);
+            log.error("JWTFilter expected header {} not passed", JWT_TOKEN_HEADER);
             throw new HttpClientErrorException(HttpStatus.UNAUTHORIZED, "No jwt token passed");
         }
 
         try {
-            jwtTokenService.validateToken(jwt);
+            final AuthDetails extractedToken = jwtService.extract(jwt);
+
+            AuthDetails requestScopedToken = jwtProvider.getObject(); // current request instance
+            requestScopedToken.setUserName(extractedToken.getUserName());
+            requestScopedToken.setScope(extractedToken.getScope());
         } catch (InvalidJWTException e) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, e.getMessage());
         }

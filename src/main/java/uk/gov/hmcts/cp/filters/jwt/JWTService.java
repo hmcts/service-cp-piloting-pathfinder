@@ -5,6 +5,7 @@ import java.util.Date;
 
 import javax.crypto.SecretKey;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
@@ -18,22 +19,28 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class JwtTokenService {
+public class JWTService {
 
     private static final Duration ONE_HOUR = Duration.ofHours(1);
+    private static final String SCOPE = "scope";
+    public static final String USER = "testUser";
 
     private final String secretKey;
 
-    public JwtTokenService(@Value("${jwt.secretKey}") String secretKey) {
+    public JWTService(@Value("${jwt.secretKey}") String secretKey) {
         this.secretKey = secretKey;
     }
 
-    public boolean validateToken(String token) throws InvalidJWTException {
+    public AuthDetails extract(String token) throws InvalidJWTException {
         try {
-            Jwts.parser()
-                .verifyWith((getSecretSigningKey()))
-                .build()
-                .parse(token);
+            final Claims claims = Jwts.parser()
+                    .verifyWith((getSecretSigningKey()))
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            String userName = claims.getSubject();
+            String scope = claims.get(SCOPE).toString();
+            return new AuthDetails(userName, scope);
         } catch (SignatureException ex) {
             log.error("Invalid signature/claims", ex);
             throw new InvalidJWTException("Invalid signature:" + ex.getMessage());
@@ -53,14 +60,13 @@ public class JwtTokenService {
             log.error("Could not verify JWT token integrity", ex);
             throw new InvalidJWTException("Could not validate JWT:" + ex.getMessage());
         }
-        return true;
     }
 
     public String createToken() {
         return Jwts.builder()
-                .subject("testUser")
+                .subject(USER)
                 .issuedAt(new Date())
-                .claim("scope", "read write")
+                .claim(SCOPE, "read write")
                 .expiration(expiryDateAfterOneHour())
                 .signWith(getSecretSigningKey())
                 .compact();

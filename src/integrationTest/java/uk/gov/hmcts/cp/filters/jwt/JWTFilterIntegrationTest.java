@@ -1,8 +1,9 @@
 package uk.gov.hmcts.cp.filters.jwt;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.gov.hmcts.cp.filters.jwt.JWTTokenFilter.JWT_TOKEN_HEADER;
+import static uk.gov.hmcts.cp.filters.jwt.JWTFilter.JWT_TOKEN_HEADER;
 
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
@@ -14,22 +15,25 @@ import org.springframework.web.client.HttpClientErrorException;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class JWTTokenFilterIntegrationTest {
+class JWTFilterIntegrationTest {
 
     @Resource
     MockMvc mockMvc;
 
     @Resource
-    private JwtTokenService jwtTokenService;
+    private JWTService jwtService;
 
     @Test
     void shouldPassWhenTokenIsValid() throws Exception {
-        String jwtToken = jwtTokenService.createToken();
+        String jwtToken = jwtService.createToken();
         mockMvc
                 .perform(
                         MockMvcRequestBuilders.get("/")
                                 .header(JWT_TOKEN_HEADER, jwtToken)
-                ).andExpect(status().isOk());
+                ).andExpectAll(
+                        status().isOk(),
+                        content().string("Welcome to service-hmcts-marketplace-piloting-pathfinder, " + JWTService.USER)
+                );
     }
 
     @Test
