@@ -1,9 +1,11 @@
+package uk.gov.hmcts.cp.controllers;
+
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
-import uk.gov.hmcts.cp.controllers.GlobalExceptionHandler;
+
 import uk.gov.hmcts.cp.openapi.model.ErrorResponse;
 import io.micrometer.tracing.TraceContext;
 
@@ -13,7 +15,7 @@ import static org.mockito.Mockito.*;
 class GlobalExceptionHandlerTest {
 
     @Test
-    void handleResponseStatusException_ShouldReturnErrorResponseWithCorrectFields() {
+    void handleResponseStatusExceptionShouldReturnErrorResponseWithCorrectFields() {
         // Arrange
         Tracer tracer = mock(Tracer.class);
         Span span = mock(Span.class);

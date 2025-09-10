@@ -33,3 +33,6 @@ spring:
 azure:
   application-insights:
     instrumentation-key: ${rpe.AppInsightsInstrumentationKey:00000000-0000-0000-0000-000000000000}
+
+jwt:
+  secretKey: "it-must-be-a-string-secret-at-least-256-bits-long"

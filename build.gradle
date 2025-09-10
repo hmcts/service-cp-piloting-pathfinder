@@ -270,6 +270,8 @@ dependencies {
 
   implementation 'com.fasterxml.jackson.core:jackson-databind:2.20.0'
 
+  implementation 'io.jsonwebtoken:jjwt:0.13.0'
+
   compileOnly group: 'org.projectlombok', name: 'lombok', version: lombokVersion
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
 
