@@ -1,6 +1,7 @@
 package uk.gov.hmcts.cp.controllers;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,6 +15,7 @@ import uk.gov.hmcts.cp.filters.jwt.AuthDetails;
  */
 @RestController
 @AllArgsConstructor
+@Slf4j
 public class RootController {
 
     // request scope bean
@@ -30,6 +32,7 @@ public class RootController {
      */
     @GetMapping("/")
     public ResponseEntity<String> welcome() {
+        log.info("START");
         return ok("Welcome to service-hmcts-marketplace-piloting-pathfinder, " + jwtToken.getUserName());
     }
 }
