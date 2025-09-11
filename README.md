@@ -73,6 +73,8 @@ pmd check \
     -r build/reports/pmd/pmd-report.html
 ```
 
+See also: [JWTFilter documentation](docs/JWTFilter.md)
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details

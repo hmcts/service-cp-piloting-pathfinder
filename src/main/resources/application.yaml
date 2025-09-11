@@ -36,3 +36,5 @@ azure:
 
 jwt:
   secretKey: "it-must-be-a-string-secret-at-least-256-bits-long"
+  filter:
+    enabled: false

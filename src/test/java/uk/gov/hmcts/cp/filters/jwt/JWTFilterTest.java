@@ -1,5 +1,6 @@
 package uk.gov.hmcts.cp.filters.jwt;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -11,12 +12,13 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.util.PathMatcher;
 import org.springframework.web.client.HttpClientErrorException;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,14 +34,26 @@ class JWTFilterTest {
     private JWTService jwtService;
     @Mock
     private ObjectProvider<AuthDetails> jwtProvider;
+    @Mock
+    private PathMatcher pathMatcher;
 
-    @InjectMocks
-    private JWTFilter jwtFilter;
+    private JWTFilter jwtFilterEnabled;
+
+    @BeforeEach
+    void setUp() {
+        jwtFilterEnabled = new JWTFilter(jwtService, pathMatcher, jwtProvider, true);
+    }
+
+    @Test
+    void shouldPassIfNoJwtInHeaderAndFilterIsDisabled() {
+        JWTFilter jwtFilterDisabled = new JWTFilter(jwtService, pathMatcher, jwtProvider, false);
+        assertThat(jwtFilterDisabled.shouldNotFilter(request)).isTrue();
+    }
 
     @Test
     void shouldErrorIfNoJwtInHeader() {
         assertThatExceptionOfType(HttpClientErrorException.class)
-                .isThrownBy(() -> jwtFilter.doFilterInternal(request, response, filterChain))
+                .isThrownBy(() -> jwtFilterEnabled.doFilterInternal(request, response, filterChain))
                 .withMessageContaining("No jwt token passed");
     }
 
@@ -49,7 +63,7 @@ class JWTFilterTest {
         when(request.getHeader(JWT_TOKEN_HEADER)).thenReturn(jwt);
         when(jwtService.extract(jwt)).thenReturn(new AuthDetails("testUser", "read write"));
         when(jwtProvider.getObject()).thenReturn(AuthDetails.builder().build());
-        jwtFilter.doFilterInternal(request, response, filterChain);
+        jwtFilterEnabled.doFilterInternal(request, response, filterChain);
         verify(filterChain).doFilter(request, response);
     }
 
