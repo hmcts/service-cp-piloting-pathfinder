@@ -15,15 +15,18 @@ import java.io.IOException;
 @Slf4j
 public class TracingFilter extends OncePerRequestFilter {
 
+    public static final String TRACE_ID = "traceId";
+    public static final String SPAN_ID = "spanId";
+
     @Override
     protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response, final FilterChain filterChain) throws ServletException, IOException {
-        if (request.getHeader("traceId") != null) {
-            MDC.put("traceId", request.getHeader("traceId"));
-            response.setHeader("traceId", request.getHeader("traceId"));
+        if (request.getHeader(TRACE_ID) != null) {
+            MDC.put(TRACE_ID, request.getHeader(TRACE_ID));
+            response.setHeader(TRACE_ID, request.getHeader(TRACE_ID));
         }
-        if (request.getHeader("spanId") != null) {
-            MDC.put("spanId", request.getHeader("spanId"));
-            response.setHeader("spanId", request.getHeader("spanId"));
+        if (request.getHeader(SPAN_ID) != null) {
+            MDC.put(SPAN_ID, request.getHeader(SPAN_ID));
+            response.setHeader(SPAN_ID, request.getHeader(SPAN_ID));
         }
         filterChain.doFilter(request, response);
     }

@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.MDC;
 
@@ -17,6 +16,8 @@ import java.io.IOException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.cp.filters.tracing.TracingFilter.SPAN_ID;
+import static uk.gov.hmcts.cp.filters.tracing.TracingFilter.TRACE_ID;
 
 @ExtendWith(MockitoExtension.class)
 class TracingFilterTest {
@@ -32,14 +33,14 @@ class TracingFilterTest {
 
     @Test
     void filter_should_use_incoming_traceId() throws ServletException, IOException {
-        when(request.getHeader("traceId")).thenReturn("incoming-traceId");
-        when(request.getHeader("spanId")).thenReturn("incoming-spanId");
+        when(request.getHeader(TRACE_ID)).thenReturn("incoming-traceId");
+        when(request.getHeader(SPAN_ID)).thenReturn("incoming-spanId");
 
         tracingFilter.doFilterInternal(request, response, filterChain);
 
-        verify(response).setHeader("traceId", "incoming-traceId");
-        assertThat(MDC.get("traceId")).isEqualTo("incoming-traceId");
-        verify(response).setHeader("spanId", "incoming-spanId");
-        assertThat(MDC.get("spanId")).isEqualTo("incoming-spanId");
+        verify(response).setHeader(TRACE_ID, "incoming-traceId");
+        assertThat(MDC.get(TRACE_ID)).isEqualTo("incoming-traceId");
+        verify(response).setHeader(SPAN_ID, "incoming-spanId");
+        assertThat(MDC.get(SPAN_ID)).isEqualTo("incoming-spanId");
     }
 }
