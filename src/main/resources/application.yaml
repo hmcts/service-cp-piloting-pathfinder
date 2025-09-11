@@ -35,6 +35,7 @@ azure:
     instrumentation-key: ${rpe.AppInsightsInstrumentationKey:00000000-0000-0000-0000-000000000000}
 
 jwt:
-  secretKey: "it-must-be-a-string-secret-at-least-256-bits-long"
+  # Expose upwards to allow env var override: export JWT_SECRET_KEY=... (base64, 256-bit min)
+  secretKey: ${JWT_SECRET_KEY:it-must-be-a-string-secret-at-least-256-bits-long}
   filter:
     enabled: false

@@ -29,4 +29,8 @@ RUN chmod 755 /opt/app/app.jar
 # ---- Runtime ----
 EXPOSE 4550
 
+# Documented runtime configuration
+# JWT secret for token verification (Base64-encoded HS256 key)
+ENV JWT_SECRET_KEY="it-must-be-a-string-secret-at-least-256-bits-long"
+
 CMD ["java", "-jar", "/opt/app/app.jar"]
