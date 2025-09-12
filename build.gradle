@@ -251,6 +251,9 @@ dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-actuator'
   implementation 'org.springframework.boot:spring-boot-starter-aop'
   implementation 'org.springframework.boot:spring-boot-starter-json'
+  implementation 'org.springframework.boot:spring-boot-starter-security'
+  implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+  implementation 'org.springframework.security:spring-security-oauth2-jose'
 
   implementation platform('io.micrometer:micrometer-tracing-bom:latest.release')
   implementation 'io.micrometer:micrometer-tracing'
@@ -279,6 +282,7 @@ dependencies {
       exclude group: 'junit', module: 'junit'
       exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
+  testImplementation 'org.springframework.security:spring-security-test'
   testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
   // testImplementation 'au.com.dius.pact.provider:junit5:4.6.17'
   // testImplementation 'au.com.dius.pact.provider:spring6:4.6.17'

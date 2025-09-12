@@ -12,7 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-@SpringBootTest(properties = {"jwt.filter.enabled=false"})
+@SpringBootTest
 @AutoConfigureMockMvc
 class JWTFilterDisabledIntegrationTest {
 

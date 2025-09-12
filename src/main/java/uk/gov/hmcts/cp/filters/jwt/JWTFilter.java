@@ -17,9 +17,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.PathMatcher;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Component
+@ConditionalOnProperty(name = "auth.provider", havingValue = "jwt", matchIfMissing = true)
 @Slf4j
 public class JWTFilter extends OncePerRequestFilter {
     public final static String JWT_TOKEN_HEADER = "jwt";
