@@ -20,8 +20,8 @@ springdoc:
   writer-with-order-by-keys: true
 
 auth:
-  # jwt (header JWT via custom filter), oauth-mock (HS256), oauth-beeceptor (JWKS)
-  provider: jwt
+  # jwt (header JWT via custom filter), oauth-mock (HS256)
+  provider: ${AUTH_PROVIDER:jwt}
 
 spring:
   config:
@@ -43,13 +43,3 @@ jwt:
   secretKey: ${JWT_SECRET_KEY:it-must-be-a-string-secret-at-least-256-bits-long}
   filter:
     enabled: false
-
-# OAuth2 Resource Server (used when auth.provider is oauth-*)
-# For oauth-beeceptor, set a Beeceptor JWKS endpoint here:
-# spring:
-#   security:
-#     oauth2:
-#       resourceserver:
-#         jwt:
-#           jwk-set-uri: ${BEECEPTOR_JWKS_URI:https://<your-subdomain>.free.beeceptor.com/.well-known/jwks.json}
-#           # or use issuer-uri if your mock exposes it

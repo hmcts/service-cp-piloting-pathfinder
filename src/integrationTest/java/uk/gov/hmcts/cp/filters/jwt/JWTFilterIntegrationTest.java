@@ -13,7 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.client.HttpClientErrorException;
 
-@SpringBootTest(properties = {"jwt.filter.enabled=true"})
+@SpringBootTest(properties = {"jwt.filter.enabled=true", "auth.provider=jwt",})
 @AutoConfigureMockMvc
 class JWTFilterIntegrationTest {
 
