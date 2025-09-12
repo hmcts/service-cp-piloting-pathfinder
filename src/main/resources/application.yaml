@@ -23,7 +23,15 @@ spring:
   config:
     import: "optional:configtree:/mnt/secrets/rpe/"
   application:
-    name: service-cp-refdata-courthearing-judges
+    name: service-cp-piloting-pathfinder
+
+  # OAuth2 Resource Server settings (used when auth.provider is oauth-*)
+  security:
+    oauth2:
+          resourceserver:
+            jwt:
+              # For oauth-RS256 mode provide a JWKS endpoint via env var
+              jwk-set-uri: ${OAUTH2_RESOURCE_SERVER_JWT_JWK_SET_URI:http://localhost/.well-known/jwks.json}
 #  azure:
 #    cosmos:
 #      endpoint: ${COSMOSDB_ENDPOINT}
@@ -34,8 +42,19 @@ azure:
   application-insights:
     instrumentation-key: ${rpe.AppInsightsInstrumentationKey:00000000-0000-0000-0000-000000000000}
 
-jwt:
-  # Expose upwards to allow env var override: export JWT_SECRET_KEY=... (base64, 256-bit min)
-  secretKey: ${JWT_SECRET_KEY:it-must-be-a-string-secret-at-least-256-bits-long}
-  filter:
-    enabled: false
+auth:
+  # Providers:
+  #  - jwt: header JWT via custom filter using JWT_SECRET_KEY
+  #  - oauth-stub: OAuth2 resource server (HS256) using JWT_SECRET_KEY
+  #  - oauth-RS256: OAuth2 resource server (JWKS) using JWK_SET_URI
+  provider: ${AUTH_PROVIDER:jwt}
+  jwt:
+    # Expose upwards to allow env var override: export JWT_SECRET_KEY=... (base64, 256-bit min)
+    secretKey: ${JWT_SECRET_KEY:it-must-be-a-string-secret-at-least-256-bits-long}
+  enable:
+    method:
+      security: false
+
+filter:
+  enable: true
+

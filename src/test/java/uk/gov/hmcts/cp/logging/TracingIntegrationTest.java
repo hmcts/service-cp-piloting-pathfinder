@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
-@SpringBootTest(properties = {"jwt.filter.enabled=false"})
+@SpringBootTest(properties = {"filter.enable=false"})
 @Slf4j
 public class TracingIntegrationTest {
 
@@ -31,7 +31,7 @@ public class TracingIntegrationTest {
     @Resource
     private MockMvc mockMvc;
 
-    private PrintStream originalStdOut = System.out;
+    private final PrintStream originalStdOut = System.out;
 
     @AfterEach
     void afterEach() {

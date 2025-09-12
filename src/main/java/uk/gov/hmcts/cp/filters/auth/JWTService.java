@@ -1,4 +1,4 @@
-package uk.gov.hmcts.cp.filters.jwt;
+package uk.gov.hmcts.cp.filters.auth;
 
 import java.time.Duration;
 import java.util.Date;
@@ -27,7 +27,7 @@ public class JWTService {
 
     private final String secretKey;
 
-    public JWTService(@Value("${jwt.secretKey}") String secretKey) {
+    public JWTService(@Value("${auth.jwt.secretKey}") String secretKey) {
         this.secretKey = secretKey;
     }
 
@@ -62,14 +62,18 @@ public class JWTService {
         }
     }
 
-    public String createToken() {
+    public String createToken(Date expiryDate) {
         return Jwts.builder()
                 .subject(USER)
                 .issuedAt(new Date())
                 .claim(SCOPE, "read write")
-                .expiration(expiryDateAfterOneHour())
+                .expiration(expiryDate)
                 .signWith(getSecretSigningKey())
                 .compact();
+    }
+
+    public String createToken() {
+        return createToken(expiryDateAfterOneHour());
     }
 
     private SecretKey getSecretSigningKey() {
@@ -80,6 +84,4 @@ public class JWTService {
     private Date expiryDateAfterOneHour() {
         return Date.from(new Date().toInstant().plus(ONE_HOUR));
     }
-
-
 }
