@@ -64,6 +64,7 @@ public class TracingIntegrationTest {
         });
         assertThat(capturedFields.get("traceId")).isEqualTo("1234-1234");
         assertThat(capturedFields.get("spanId")).isEqualTo("567-567");
+        assertThat(capturedFields.get("applicationName")).isEqualTo("service-cp-refdata-courthearing-judges");
 
         assertThat(result.getResponse().getHeader("traceId")).isEqualTo(capturedFields.get("traceId"));
         assertThat(result.getResponse().getHeader("spanId")).isEqualTo(capturedFields.get("spanId"));
