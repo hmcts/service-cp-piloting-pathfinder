@@ -19,15 +19,18 @@ springdoc:
   packagesToScan: uk.gov.hmcts.cp.controllers
   writer-with-order-by-keys: true
 
-auth:
-  # jwt (header JWT via custom filter), oauth-mock (HS256)
-  provider: ${AUTH_PROVIDER:jwt}
-
 spring:
   config:
     import: "optional:configtree:/mnt/secrets/rpe/"
   application:
     name: service-cp-refdata-courthearing-judges
+  # OAuth2 Resource Server settings (used when auth.provider is oauth-*)
+  security:
+    oauth2:
+          resourceserver:
+            jwt:
+              # For oauth-RS256 mode provide a JWKS endpoint via env var
+              jwk-set-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI:}
 #  azure:
 #    cosmos:
 #      endpoint: ${COSMOSDB_ENDPOINT}
@@ -37,6 +40,13 @@ spring:
 azure:
   application-insights:
     instrumentation-key: ${rpe.AppInsightsInstrumentationKey:00000000-0000-0000-0000-000000000000}
+
+auth:
+  # Providers:
+  #  - jwt: header JWT via custom filter
+  #  - oauth-mock: OAuth2 resource server (HS256) using JWT_SECRET_KEY
+  #  - oauth-RS256: OAuth2 resource server (JWKS) using JWK_SET_URI
+  provider: ${AUTH_PROVIDER:jwt}
 
 jwt:
   # Expose upwards to allow env var override: export JWT_SECRET_KEY=... (base64, 256-bit min)
