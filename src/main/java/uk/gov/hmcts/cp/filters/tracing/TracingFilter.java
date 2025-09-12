@@ -22,7 +22,7 @@ public class TracingFilter extends OncePerRequestFilter {
 
     private final String applicationName;
 
-    public TracingFilter(@Value("${spring.application.name}") String applicationName) {
+    public TracingFilter(@Value("${spring.application.name}") final String applicationName) {
         this.applicationName = applicationName;
     }
 
