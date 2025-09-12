@@ -1,5 +1,6 @@
 gradle
 bin/*
+tmp/
 !bin/run-in-docker.sh
 .gradle
 /build/

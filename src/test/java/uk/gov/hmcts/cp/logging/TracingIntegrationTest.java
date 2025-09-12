@@ -6,9 +6,11 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -23,6 +25,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Slf4j
 public class TracingIntegrationTest {
 
+    @Value("${spring.application.name}")
+    private String springApplicationName;
+
     @Resource
     private MockMvc mockMvc;
 
@@ -34,7 +39,7 @@ public class TracingIntegrationTest {
     }
 
     @Test
-    void incoming_request_should_add_tracing() throws Exception {
+    void incoming_request_should_add_new_tracing() throws Exception {
         ByteArrayOutputStream capturedStdOut = captureStdOut();
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
@@ -47,12 +52,26 @@ public class TracingIntegrationTest {
         assertThat(capturedFields.get("spanId")).isNotNull();
         assertThat(capturedFields.get("logger_name")).isEqualTo("uk.gov.hmcts.cp.controllers.RootController");
         assertThat(capturedFields.get("message")).isEqualTo("START");
+    }
 
-        // Do we want to ensure that the traceId and spanId are returned on the response headers ?
-        // Feels sensible ... tbc
-        // MvcResult result = mockMvc.perform(...)
-        // Collection<String> headers = result.getResponse().getHeaderNames();
-        // assertThat(result.getResponse().getHeader("traceId")).isEqualTo(capturedFields.get("traceId"));
+    @Test
+    void incoming_request_with_traceId_should_pass_through() throws Exception {
+        ByteArrayOutputStream capturedStdOut = captureStdOut();
+        MvcResult result = mockMvc.perform(get("/")
+                        .header("traceId", "1234-1234")
+                        .header("spanId", "567-567"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String logMessage = capturedStdOut.toString();
+        Map<String, Object> capturedFields = new ObjectMapper().readValue(logMessage, new TypeReference<>() {
+        });
+        assertThat(capturedFields.get("traceId")).isEqualTo("1234-1234");
+        assertThat(capturedFields.get("spanId")).isEqualTo("567-567");
+        assertThat(capturedFields.get("applicationName")).isEqualTo(springApplicationName);
+
+        assertThat(result.getResponse().getHeader("traceId")).isEqualTo(capturedFields.get("traceId"));
+        assertThat(result.getResponse().getHeader("spanId")).isEqualTo(capturedFields.get("spanId"));
     }
 
     private ByteArrayOutputStream captureStdOut() {
