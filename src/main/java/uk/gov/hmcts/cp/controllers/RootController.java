@@ -19,7 +19,7 @@ import uk.gov.hmcts.cp.filters.jwt.AuthDetails;
 public class RootController {
 
     // request scope bean
-    AuthDetails jwtToken;
+    AuthDetails authDetails;
 
     /**
      * Root GET endpoint.
@@ -27,12 +27,14 @@ public class RootController {
      * <p>Azure application service has a hidden feature of making requests to root endpoint when
      * "Always On" is turned on. This is the endpoint to deal with that and therefore silence the
      * unnecessary 404s as a response code.
+     * ColinG ... seems likely that the 404 come from a mis configured health probe
+     * We probably need to wire the app-service / k8s health probe to hit an actuator endpoint such as /health
      *
      * @return Welcome message from the service.
      */
     @GetMapping("/")
     public ResponseEntity<String> welcome() {
         log.info("START");
-        return ok("Welcome to service-hmcts-marketplace-piloting-pathfinder, " + jwtToken.getUserName());
+        return ok("Welcome to service-hmcts-marketplace-piloting-pathfinder, " + authDetails.getUserName());
     }
 }

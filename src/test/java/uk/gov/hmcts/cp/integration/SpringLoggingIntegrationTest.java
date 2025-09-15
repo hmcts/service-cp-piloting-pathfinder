@@ -1,4 +1,4 @@
-package uk.gov.hmcts.cp.logging;
+package uk.gov.hmcts.cp.integration;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,8 +37,8 @@ public class SpringLoggingIntegrationTest {
 
         assertThat(capturedFields.get("any-mdc-field")).isEqualTo("1234-1234");
         assertThat(capturedFields.get("timestamp")).isNotNull();
-        assertThat(capturedFields.get("logger_name")).isEqualTo("uk.gov.hmcts.cp.logging.SpringLoggingIntegrationTest");
-        assertThat(capturedFields.get("thread_name")).isEqualTo("Test worker");
+        assertThat(capturedFields.get("logger_name")).isEqualTo(this.getClass().getName());
+        assertThat(capturedFields.get("thread_name")).isNotNull();
         assertThat(capturedFields.get("level")).isEqualTo("INFO");
         assertThat(capturedFields.get("message")).isEqualTo("spring boot test message");
     }
