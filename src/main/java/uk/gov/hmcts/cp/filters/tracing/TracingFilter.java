@@ -37,6 +37,7 @@ public class TracingFilter extends OncePerRequestFilter {
             MDC.put(SPAN_ID, request.getHeader(SPAN_ID));
             response.setHeader(SPAN_ID, request.getHeader(SPAN_ID));
         }
+        log.info("Incoming Request: [{}] {}", request.getMethod(), request.getRequestURI());
         filterChain.doFilter(request, response);
     }
 }
