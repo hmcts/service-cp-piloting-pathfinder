@@ -35,6 +35,14 @@ See logback.xml for master list. Or better still, run the unit test or integrati
 mdc - Logs any objects added to MDC e.g. io.micrometer adds traceId and spanId to MDC. We can add any custom fields to this.
 
 
+# Incoming request logging
+We log the method and url for every incoming request in TracingFilter
+i.e.
+```
+    "message":"Incoming Request: [GET] /urnmapper/1234-1234"
+```
+
+
 # Testing
 We have strong unit and spring boot integration tests that assert the individual fields in log entries
 We dont currently have a test to prove the main Application logging is correct

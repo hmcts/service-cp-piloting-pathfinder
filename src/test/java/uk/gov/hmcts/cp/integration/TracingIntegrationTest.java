@@ -17,7 +17,6 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
 @SpringBootTest(properties = {"jwt.filter.enabled=false"})
@@ -38,7 +37,7 @@ public class TracingIntegrationTest {
     }
 
     @Test
-    void incoming_request_log_line1_should_add_new_tracing() throws Exception {
+    void incoming_request_log_line1_should_add_new_tracing() {
         Map<String, String> capturedFields = captureLogMessageFields("/", null, null);
         assertThat(capturedFields.get("applicationName")).isEqualTo(springApplicationName);
         assertThat(capturedFields.get("traceId")).isNotEmpty();
@@ -46,11 +45,18 @@ public class TracingIntegrationTest {
     }
 
     @Test
-    void incoming_request_with_traceId_should_pass_through() throws Exception {
+    void incoming_request_with_traceId_should_pass_through() {
         Map<String, String> capturedFields = captureLogMessageFields("/", "12-12", "34-34");
         assertThat(capturedFields.get("applicationName")).isEqualTo(springApplicationName);
         assertThat(capturedFields.get("traceId")).isEqualTo("12-12");
         assertThat(capturedFields.get("spanId")).isEqualTo("34-34");
+    }
+
+    @Test
+    void incoming_request_to_404_should_still_log() {
+        Map<String, String> capturedFields = captureLogMessageFields("/bad-url", null, null);
+        assertThat(capturedFields.get("applicationName")).isEqualTo(springApplicationName);
+        assertThat(capturedFields.get("message")).isEqualTo("Incoming Request: [GET] /bad-url");
     }
 
     @SneakyThrows
@@ -58,19 +64,17 @@ public class TracingIntegrationTest {
         final PrintStream originalStdOut = System.out;
         ByteArrayOutputStream capturedStdOut = captureStdOut();
         if (traceId == null) {
-            mockMvc.perform(get(url)).andExpect(status().isOk());
+            mockMvc.perform(get(url));
         } else {
             mockMvc.perform(get(url)
-                            .header("traceId", traceId)
-                            .header("spanId", spanId))
-                    .andExpect(status().isOk());
+                    .header("traceId", traceId)
+                    .header("spanId", spanId));
         }
         String logMessages = capturedStdOut.toString();
         String logMessageLine1 = logMessages.split("\\n")[0];
         Map<String, String> capturedLogFields = new ObjectMapper().readValue(logMessageLine1, new TypeReference<>() {
         });
         System.setOut(originalStdOut);
-        log.info(capturedStdOut.toString());
         return capturedLogFields;
     }
 
