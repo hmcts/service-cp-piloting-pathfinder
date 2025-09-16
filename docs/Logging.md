@@ -37,9 +37,9 @@ mdc - Logs any objects added to MDC e.g. io.micrometer adds traceId and spanId t
 
 # Incoming request logging
 We may need to log the method and url for every incoming request in TracingFilter
-Best done using AbstractRequestLoggingFilter
-As per https://www.baeldung.com/spring-http-logging#:~:text=5.%20Using%20Spring%20Boot%20Built%2DIn%20Request%20Logging
-i.e.
+This may be done done using AbstractRequestLoggingFilter since this also allows us to log response status
+i.e. as per https://www.baeldung.com/spring-http-logging#:~:text=5.%20Using%20Spring%20Boot%20Built%2DIn%20Request%20Logging
+But for now we have a single logging line in TraceFilter which gives us some easy logging
 ```
     "message":"Incoming Request: [GET] /urnmapper/1234-1234"
 ```
