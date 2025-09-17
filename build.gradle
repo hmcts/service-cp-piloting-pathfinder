@@ -8,6 +8,7 @@ plugins {
     id "com.github.ben-manes.versions" version "0.52.0"
     id "org.cyclonedx.bom" version "2.3.1"
     id "au.com.dius.pact" version "4.6.17"
+    id 'pmd'
 }
 
 group = 'uk.gov.hmcts.cp'
@@ -149,6 +150,25 @@ tasks.named('check') {
     dependsOn tasks.named('integration')
 }
 
+pmd {
+    ruleSets = []
+    ruleSetFiles = files(".github/pmd-ruleset.xml")
+    ignoreFailures = false
+}
+
+tasks.withType(Pmd) {
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+}
+tasks.named("pmdMain").configure {
+    onlyIf { gradle.startParameter.taskNames.contains(name) }
+}
+tasks.named("pmdTest").configure { enabled = false }
+tasks.named("pmdIntegrationTest").configure { enabled = false }
+tasks.named("pmdPactVerificationTest").configure { enabled = false }
+
 // check dependencies upon release ONLY
 tasks.named("dependencyUpdates").configure {
     def isNonStable = { String version ->
@@ -289,4 +309,14 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     // testImplementation 'au.com.dius.pact.provider:junit5:4.6.17'
     // testImplementation 'au.com.dius.pact.provider:spring6:4.6.17'
+
+    // integrationTestImplementation dependencies are need as they aren't always propagate as expected,
+    // especially with platform BOMs, test runtime dependencies, or custom tasks. Explicit dependencies eliminate that risk.
+    integrationTestImplementation platform('org.junit:junit-bom:5.13.4')
+    integrationTestRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    integrationTestImplementation  group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '3.5.5', {
+        exclude group: 'junit', module: 'junit'
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+    integrationTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
