@@ -1,9 +1,8 @@
-package uk.gov.hmcts.cp.filters.jwt;
+package uk.gov.hmcts.cp.filters.auth;
 
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.gov.hmcts.cp.filters.jwt.JWTFilter.JWT_TOKEN_HEADER;
+import static uk.gov.hmcts.cp.filters.auth.JWTFilter.JWT_TOKEN_HEADER;
 
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
@@ -11,9 +10,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.web.client.HttpClientErrorException;
 
-@SpringBootTest(properties = {"jwt.filter.enabled=true"})
+@SpringBootTest(properties = {"filter.enable=true", "auth.provider=jwt",})
 @AutoConfigureMockMvc
 class JWTFilterIntegrationTest {
 
@@ -24,7 +22,7 @@ class JWTFilterIntegrationTest {
     private JWTService jwtService;
 
     @Test
-    void shouldPassWhenTokenIsValid() throws Exception {
+    void should_pass_when_token_is_valid() throws Exception {
         String jwtToken = jwtService.createToken();
         mockMvc
                 .perform(
@@ -37,12 +35,11 @@ class JWTFilterIntegrationTest {
     }
 
     @Test
-    void shouldFailWhenTokenIsMissing() {
-        assertThatExceptionOfType(HttpClientErrorException.class)
-                .isThrownBy(() -> mockMvc
-                        .perform(
-                                MockMvcRequestBuilders.get("/")
-                        ))
-                .withMessageContaining("No jwt token passed");
+    void should_reject_missing_token() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/"))
+                .andExpectAll(
+                        status().isUnauthorized(),
+                        content().string("{\"error\":\"401\",\"message\":\"No jwt token passed\"}")
+                        );
     }
 }

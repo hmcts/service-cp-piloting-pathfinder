@@ -1,4 +1,4 @@
-package uk.gov.hmcts.cp.filters.jwt;
+package uk.gov.hmcts.cp.filters.auth;
 
 import java.time.Duration;
 import java.util.Date;
@@ -27,7 +27,7 @@ public class JWTService {
 
     private final String secretKey;
 
-    public JWTService(@Value("${jwt.secretKey}") String secretKey) {
+    public JWTService(@Value("${auth.jwt.secretKey}") String secretKey) {
         this.secretKey = secretKey;
     }
 

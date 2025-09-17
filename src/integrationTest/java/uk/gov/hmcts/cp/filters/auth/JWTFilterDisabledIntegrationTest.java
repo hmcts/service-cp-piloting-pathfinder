@@ -1,4 +1,4 @@
-package uk.gov.hmcts.cp.filters.jwt;
+package uk.gov.hmcts.cp.filters.auth;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -12,8 +12,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-@SpringBootTest(properties = {"jwt.filter.enabled=false"})
-@AutoConfigureMockMvc
+@SpringBootTest(properties = {
+        "auth.provider=jwt"
+})
+@AutoConfigureMockMvc(addFilters = false)
 class JWTFilterDisabledIntegrationTest {
 
     @Resource
