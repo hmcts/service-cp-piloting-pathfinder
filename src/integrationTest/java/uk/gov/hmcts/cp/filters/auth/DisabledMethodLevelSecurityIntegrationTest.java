@@ -1,4 +1,4 @@
-package uk.gov.hmcts.cp.filters.jwt;
+package uk.gov.hmcts.cp.filters.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,7 +18,7 @@ public class DisabledMethodLevelSecurityIntegrationTest extends WireMockTestSetu
 
     @Test
     void should_access_secure_method_When_method_level_security_is_off() {
-        assertThat(securedService.accessUserData()).isEqualTo("Accessible to only user or admin");
+        assertThat(securedService.accessUserData()).isEqualTo("Accessible to only authenticated users");
     }
 
 

@@ -1,10 +1,10 @@
-package uk.gov.hmcts.cp.filters.jwt;
+package uk.gov.hmcts.cp.filters.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.cp.filters.jwt.JWTFilter.JWT_TOKEN_HEADER;
+import static uk.gov.hmcts.cp.filters.auth.JWTFilter.JWT_TOKEN_HEADER;
 
 import java.io.IOException;
 
@@ -45,20 +45,20 @@ class JWTFilterTest {
     }
 
     @Test
-    void shouldPassIfNoJwtInHeaderAndFilterIsDisabled() {
+    void should_pass_if_no_jwt_in_header_and_filter_is_disabled() {
         JWTFilter jwtFilterDisabled = new JWTFilter(jwtService, pathMatcher, jwtProvider, false);
         assertThat(jwtFilterDisabled.shouldNotFilter(request)).isTrue();
     }
 
     @Test
-    void shouldErrorIfNoJwtInHeader() {
+    void should_error_if_no_jwt_in_header() {
         assertThatExceptionOfType(HttpClientErrorException.class)
                 .isThrownBy(() -> jwtFilterEnabled.doFilterInternal(request, response, filterChain))
                 .withMessageContaining("No jwt token passed");
     }
 
     @Test
-    void shouldPassThroughIfPassedJwt() throws ServletException, IOException, InvalidJWTException {
+    void should_pass_through_if_passed_jwt() throws ServletException, IOException, InvalidJWTException {
         final String jwt = "dummy-token";
         when(request.getHeader(JWT_TOKEN_HEADER)).thenReturn(jwt);
         when(jwtService.extract(jwt)).thenReturn(new AuthDetails("testUser", "read write"));
@@ -66,5 +66,4 @@ class JWTFilterTest {
         jwtFilterEnabled.doFilterInternal(request, response, filterChain);
         verify(filterChain).doFilter(request, response);
     }
-
 }

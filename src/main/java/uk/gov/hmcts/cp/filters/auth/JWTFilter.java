@@ -1,4 +1,4 @@
-package uk.gov.hmcts.cp.filters.jwt;
+package uk.gov.hmcts.cp.filters.auth;
 
 import java.io.IOException;
 import java.util.stream.Stream;
@@ -8,8 +8,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -17,21 +18,25 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.PathMatcher;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order(Ordered.HIGHEST_PRECEDENCE + 1)
 @Component
 @ConditionalOnProperty(name = "auth.provider", havingValue = "jwt", matchIfMissing = true)
 @Slf4j
 public class JWTFilter extends OncePerRequestFilter {
     public final static String JWT_TOKEN_HEADER = "jwt";
+    public static final String AUTHORIZATION_HEADER = "Authorization";
 
     private final JWTService jwtService;
     private final PathMatcher pathMatcher;
     private final ObjectProvider<AuthDetails> jwtProvider;
     private final boolean jwFilterEnabled;
 
-    public JWTFilter(final JWTService jwtService, final PathMatcher pathMatcher, final ObjectProvider<AuthDetails> jwtProvider, @Value("${jwt.filter.enabled}") final boolean jwFilterEnabled) {
+    public JWTFilter(final JWTService jwtService,
+                     final PathMatcher pathMatcher,
+                     final ObjectProvider<AuthDetails> jwtProvider,
+                     @Value("${filter.enable}") final boolean jwFilterEnabled
+    ) {
         this.jwtService = jwtService;
         this.pathMatcher = pathMatcher;
         this.jwtProvider = jwtProvider;
@@ -41,7 +46,8 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response, final FilterChain filterChain) throws ServletException, IOException {
 
-        final String jwt = request.getHeader(JWT_TOKEN_HEADER);
+        log.info("JWT Filter invoked");
+        final String jwt = request.getHeader(JWT_TOKEN_HEADER)  ;
 
         if (jwt == null) {
             log.error("JWTFilter expected header {} not passed", JWT_TOKEN_HEADER);
@@ -54,6 +60,7 @@ public class JWTFilter extends OncePerRequestFilter {
             AuthDetails requestScopedToken = jwtProvider.getObject(); // current request instance
             requestScopedToken.setUserName(extractedToken.getUserName());
             requestScopedToken.setScope(extractedToken.getScope());
+            log.info("Authenticated user {} with scope {}", extractedToken.getUserName(), extractedToken.getScope());
         } catch (InvalidJWTException e) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, e.getMessage());
         }

@@ -140,7 +140,7 @@ Each provider has corresponding integration tests:
 
 ### JWT Provider Tests
 ```java
-@SpringBootTest(properties = {"jwt.filter.enabled=true", "auth.provider=jwt"})
+@SpringBootTest(properties = {"filter.enable=true", "auth.provider=jwt"})
 class JWTFilterIntegrationTest {
     @Test
     void shouldPassWhenTokenIsValid() throws Exception {
@@ -245,7 +245,7 @@ All providers exclude the `/health` endpoint from authentication requirements.
 1. **JWKS URL not accessible**: Ensure `OAUTH2_RESOURCE_SERVER_JWT_JWK_SET_URI` points to a valid JWKS endpoint
 2. **Token validation fails**: Check that the secret key matches between token generation and validation
 3. **Method security not working**: Ensure `auth.enable.method.security=true` is set
-4. **Filter not running**: Check `jwt.filter.enabled=true` for JWT provider
+4. **Filter not running**: Check `filter.enable=true` for JWT provider
 
 ### Debugging
 
@@ -262,3 +262,4 @@ logging:
 - [JWTFilter.md](./JWTFilter.md) - Detailed JWT filter documentation
 - [Spring Security OAuth2 Resource Server](https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/index.html)
 - [JWKS Specification](https://tools.ietf.org/html/rfc7517)
+

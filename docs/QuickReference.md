@@ -22,7 +22,7 @@
 ```java
 @SpringBootTest(properties = {
     "auth.provider=jwt",
-    "jwt.filter.enabled=true"
+    "filter.enable=true"
 })
 class JWTFilterIntegrationTest {
     // Tests use 'jwt' header
@@ -104,3 +104,4 @@ OAUTH2_RESOURCE_SERVER_JWT_JWK_SET_URI="https://auth-server/.well-known/jwks.jso
 # Method-level security
 AUTH_ENABLE_METHOD_SECURITY=true
 ```
+

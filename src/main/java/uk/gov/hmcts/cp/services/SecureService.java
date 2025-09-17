@@ -5,8 +5,13 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class SecureService {
+
+    public static final String AUTHENTICATED_USER_ACCESS_MESSAGE = "Accessible to only authenticated users";
+
     @PreAuthorize("isAuthenticated()")
     public String accessUserData() {
-        return "Accessible to only user or admin";
+        return AUTHENTICATED_USER_ACCESS_MESSAGE;
     }
+
+
 }

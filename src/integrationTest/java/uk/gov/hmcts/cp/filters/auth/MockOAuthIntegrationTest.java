@@ -1,10 +1,10 @@
-package uk.gov.hmcts.cp.filters.jwt;
+package uk.gov.hmcts.cp.filters.auth;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
 
@@ -41,30 +41,37 @@ class MockOAuthIntegrationTest {
     MockMvc mockMvc;
 
     @Test
-    void shouldAcceptValidBearerToken() throws Exception {
-        String token = createHs256Token("alice", "read write");
+    void should_accept_valid_bearer_token() throws Exception {
+        String token = createHs256Token("read write", Date.from(Instant.now().plusSeconds(600)));
         mockMvc.perform(MockMvcRequestBuilders.get("/")
                         .header("Authorization", "Bearer " + token))
                 .andExpectAll(
                         status().isOk(),
-                        content().string(org.hamcrest.Matchers.containsString("Welcome"))
+                        content().string(org.hamcrest.Matchers.containsString("Welcome to service-hmcts-marketplace-piloting-pathfinder, alice"))
                 );
     }
 
     @Test
-    void shouldRejectMissingToken() throws Exception {
+    void should_reject_expired_bearer_token() throws Exception {
+        String token = createHs256Token("read", Date.from(Instant.now().minusSeconds(600)));
+        mockMvc.perform(MockMvcRequestBuilders.get("/")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void should_reject_missing_token() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/"))
                 .andExpect(status().isUnauthorized());
     }
 
-    private String createHs256Token(String subject, String scope) {
+    private String createHs256Token(String scope, final Date expiry) {
         SecretKey key = new SecretKeySpec(SECRET_BYTES, "HmacSHA256");
         Date now = new Date();
-        Date exp = new Date(now.getTime() + Duration.ofMinutes(10).toMillis());
         return Jwts.builder()
-                .subject(subject)
+                .subject("alice")
                 .issuedAt(now)
-                .expiration(exp)
+                .expiration(expiry)
                 .claim("scope", scope)
                 .signWith(key)
                 .compact();

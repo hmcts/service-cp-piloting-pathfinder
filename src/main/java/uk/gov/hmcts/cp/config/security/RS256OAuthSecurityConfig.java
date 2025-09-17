@@ -15,8 +15,11 @@ import org.springframework.security.web.SecurityFilterChain;
 @ConditionalOnProperty(name = "auth.provider", havingValue = "oauth-RS256")
 public class RS256OAuthSecurityConfig {
 
+    @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
+    private String jwksUri;
+
     @Bean
-    public JwtDecoder jwtDecoder(@Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}") String jwksUri) {
+    public JwtDecoder jwtDecoder() {
         return NimbusJwtDecoder.withJwkSetUri(jwksUri).build();
     }
 

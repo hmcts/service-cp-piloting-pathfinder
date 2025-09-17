@@ -4,6 +4,7 @@ import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.server.ResponseStatusException;
 
 import uk.gov.hmcts.cp.openapi.model.ErrorResponse;
@@ -39,6 +40,35 @@ class GlobalExceptionHandlerTest {
         assertNotNull(error);
         assertEquals("404", error.getError());
         assertEquals(reason, error.getMessage());
+        assertNotNull(error.getTimestamp());
+        assertEquals("test-trace-id", error.getTraceId());
+    }
+
+    @Test
+    void handleHttpClientErrorExceptionShouldReturnErrorResponseWithCorrectFields() {
+        // Arrange
+        Tracer tracer = mock(Tracer.class);
+        Span span = mock(Span.class);
+        TraceContext context = mock(TraceContext.class);
+
+        when(tracer.currentSpan()).thenReturn(span);
+        when(span.context()).thenReturn(context);
+        when(context.traceId()).thenReturn("test-trace-id");
+
+        GlobalExceptionHandler handler = new GlobalExceptionHandler(tracer);
+
+        String message = "No Bearer token passed";
+        HttpClientErrorException ex = new HttpClientErrorException(HttpStatus.UNAUTHORIZED, message);
+
+        // Act
+        var response = handler.handleHttpClientErrorException(ex);
+
+        // Assert
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        ErrorResponse error = response.getBody();
+        assertNotNull(error);
+        assertEquals("401", error.getError());
+        assertEquals(message, error.getMessage());
         assertNotNull(error.getTimestamp());
         assertEquals("test-trace-id", error.getTraceId());
     }

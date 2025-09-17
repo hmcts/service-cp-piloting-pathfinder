@@ -22,12 +22,12 @@ jwt:
 ```
 
 - `auth.provider`: Set to `jwt` to enable JWT filter mode (default)
-- `jwt.secretKey`: Base64 key suitable for HS256 (≥ 256 bits)
-- `jwt.filter.enabled`: When false, the filter is skipped entirely. When true, it runs for all paths except those excluded.
+- `auth.jwt.secretKey`: Base64 key suitable for HS256 (≥ 256 bits)
+- `filter.enable`: When false, the filter is skipped entirely. When true, it runs for all paths except those excluded.
 
 ### Enabling per environment
 - Env var: `AUTH_PROVIDER=jwt` and `JWT_FILTER_ENABLED=true`
-- Tests: `@SpringBootTest(properties = {"auth.provider=jwt", "jwt.filter.enabled=true"})`
+- Tests: `@SpringBootTest(properties = {"auth.provider=jwt", "filter.enable=true"})`
 - Profile override: `application-<profile>.yaml`
 
 ## Excluded paths
@@ -47,7 +47,7 @@ curl -H "jwt: <your-jwt-token>" http://localhost:4550/
 ## Integration Test
 
 ```java
-@SpringBootTest(properties = {"jwt.filter.enabled=true", "auth.provider=jwt"})
+@SpringBootTest(properties = {"filter.enable=true", "auth.provider=jwt"})
 class JWTFilterIntegrationTest {
     @Test
     void shouldPassWhenTokenIsValid() throws Exception {

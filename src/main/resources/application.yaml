@@ -23,7 +23,7 @@ spring:
   config:
     import: "optional:configtree:/mnt/secrets/rpe/"
   application:
-    name: service-cp-refdata-courthearing-judges
+    name: service-cp-piloting-pathfinder
 
   # OAuth2 Resource Server settings (used when auth.provider is oauth-*)
   security:
@@ -48,13 +48,13 @@ auth:
   #  - oauth-mock: OAuth2 resource server (HS256) using JWT_SECRET_KEY
   #  - oauth-RS256: OAuth2 resource server (JWKS) using JWK_SET_URI
   provider: ${AUTH_PROVIDER:jwt}
+  jwt:
+    # Expose upwards to allow env var override: export JWT_SECRET_KEY=... (base64, 256-bit min)
+    secretKey: ${JWT_SECRET_KEY:it-must-be-a-string-secret-at-least-256-bits-long}
   enable:
     method:
       security: false
 
-# move this under auth
-jwt:
-  # Expose upwards to allow env var override: export JWT_SECRET_KEY=... (base64, 256-bit min)
-  secretKey: ${JWT_SECRET_KEY:it-must-be-a-string-secret-at-least-256-bits-long}
-  filter:
-    enabled: false
+filter:
+  enable: true
+
