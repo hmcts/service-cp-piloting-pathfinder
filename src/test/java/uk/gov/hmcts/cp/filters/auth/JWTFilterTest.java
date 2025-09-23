@@ -1,9 +1,7 @@
 package uk.gov.hmcts.cp.filters.auth;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import static uk.gov.hmcts.cp.filters.auth.JWTFilter.JWT_TOKEN_HEADER;
 
 import java.io.IOException;
@@ -46,7 +44,7 @@ class JWTFilterTest {
 
     @Test
     void should_pass_if_no_jwt_in_header_and_filter_is_disabled() {
-        JWTFilter jwtFilterDisabled = new JWTFilter(jwtService, pathMatcher, jwtProvider, false);
+        final JWTFilter jwtFilterDisabled = new JWTFilter(jwtService, pathMatcher, jwtProvider, false);
         assertThat(jwtFilterDisabled.shouldNotFilter(request)).isTrue();
     }
 

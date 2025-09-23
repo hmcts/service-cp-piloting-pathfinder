@@ -151,9 +151,9 @@ tasks.named('check') {
 }
 
 pmd {
+    toolVersion = "7.17.0"
     ruleSets = []
     ruleSetFiles = files(".github/pmd-ruleset.xml")
-    ignoreFailures = false
 }
 
 tasks.withType(Pmd).configureEach {
@@ -308,6 +308,7 @@ dependencies {
     testImplementation 'com.nimbusds:nimbus-jose-jwt:9.39'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation "net.javacrumbs.json-unit:json-unit-assertj:3.2.7"
     // testImplementation 'au.com.dius.pact.provider:junit5:4.6.17'
     // testImplementation 'au.com.dius.pact.provider:spring6:4.6.17'
 

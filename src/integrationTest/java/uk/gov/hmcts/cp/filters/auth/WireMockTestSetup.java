@@ -20,31 +20,31 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
 @WireMockTest
-abstract public class WireMockTestSetup {
+public class WireMockTestSetup {
     protected static String wiremockBaseUrl;
 
     protected static RSAKey rsaKey;
 
     @BeforeAll
-    static void beforeAll(WireMockRuntimeInfo wiremock) throws Exception {
+    static void beforeAll(final WireMockRuntimeInfo wiremock) throws Exception {
         wiremockBaseUrl = wiremock.getHttpBaseUrl();
-        String kid = "test-key";
-        java.security.KeyPairGenerator kpg = getInstance("RSA");
+        final String kid = "test-key";
+        final java.security.KeyPairGenerator kpg = getInstance("RSA");
         kpg.initialize(2048);
-        java.security.KeyPair kp = kpg.generateKeyPair();
-        rsaKey = new RSAKey.Builder((RSAPublicKey) kp.getPublic())
-                .privateKey(kp.getPrivate())
+        final java.security.KeyPair keyPair = kpg.generateKeyPair();
+        rsaKey = new RSAKey.Builder((RSAPublicKey) keyPair.getPublic())
+                .privateKey(keyPair.getPrivate())
                 .keyID(kid)
                 .algorithm(JWSAlgorithm.RS256)
                 .build();
     }
 
     @BeforeEach
-    void stubJwks(WireMockRuntimeInfo wm) {
-        String jwks = toJSONString(new JWKSet(List.of(rsaKey.toPublicJWK())).toJSONObject());
+    void stubJwks(final WireMockRuntimeInfo wireMockRuntimeInfo) {
+        final String jwks = toJSONString(new JWKSet(List.of(rsaKey.toPublicJWK())).toJSONObject());
 
-        wm.getWireMock().resetMappings(); // optional: start clean
-        wm.getWireMock().register(
+        wireMockRuntimeInfo.getWireMock().resetMappings(); // optional: start clean
+        wireMockRuntimeInfo.getWireMock().register(
                 WireMock.get(urlPathEqualTo("/.well-known/jwks.json"))
                         .withName("jwks-endpoint")
                         .willReturn(aResponse()
@@ -55,8 +55,8 @@ abstract public class WireMockTestSetup {
 
 
     @DynamicPropertySource
-    static void props(DynamicPropertyRegistry r) {
-        r.add("spring.security.oauth2.resourceserver.jwt.jwk-set-uri",
+    protected static void props(final DynamicPropertyRegistry dynamicPropertyRegistry) {
+        dynamicPropertyRegistry.add("spring.security.oauth2.resourceserver.jwt.jwk-set-uri",
                 () -> wiremockBaseUrl + "/.well-known/jwks.json");
     }
 }

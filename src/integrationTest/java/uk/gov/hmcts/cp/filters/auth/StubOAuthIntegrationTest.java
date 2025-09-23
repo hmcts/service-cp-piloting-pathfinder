@@ -29,21 +29,24 @@ import jakarta.annotation.Resource;
 @AutoConfigureMockMvc
 class StubOAuthIntegrationTest {
 
+    @SuppressWarnings("PMD.HardCodedCryptoKey")
     private static final byte[] SECRET_BYTES = "this-is-a-32-byte-minimum-secret-key!!".substring(0, 32)
             .getBytes(StandardCharsets.UTF_8);
     private static final String SECRET_BASE64 = Base64.getEncoder().encodeToString(SECRET_BYTES);
 
+    @Resource
+    private MockMvc mockMvc;
+
     @DynamicPropertySource
-    static void props(DynamicPropertyRegistry r) {
-        r.add("JWT_SECRET_KEY", () -> SECRET_BASE64);
+    @SuppressWarnings("PMD.UnusedPrivateMethod")
+    private static void props(final DynamicPropertyRegistry dynamicPropertyRegistry) {
+        dynamicPropertyRegistry.add("JWT_SECRET_KEY", () -> SECRET_BASE64);
     }
 
-    @Resource
-    MockMvc mockMvc;
-
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void should_accept_valid_bearer_token() throws Exception {
-        String token = createHs256Token("read write", Date.from(Instant.now().plusSeconds(600)));
+        final String token = createHs256Token("read write", Instant.now().plusSeconds(600));
         mockMvc.perform(MockMvcRequestBuilders.get("/")
                         .header("Authorization", "Bearer " + token))
                 .andExpectAll(
@@ -53,26 +56,27 @@ class StubOAuthIntegrationTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void should_reject_expired_bearer_token() throws Exception {
-        String token = createHs256Token("read", Date.from(Instant.now().minusSeconds(600)));
+        final String token = createHs256Token("read", Instant.now().minusSeconds(600));
         mockMvc.perform(MockMvcRequestBuilders.get("/")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void should_reject_missing_token() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/"))
                 .andExpect(status().isUnauthorized());
     }
 
-    private String createHs256Token(String scope, final Date expiry) {
-        SecretKey key = new SecretKeySpec(SECRET_BYTES, "HmacSHA256");
-        Date now = new Date();
+    private String createHs256Token(final String scope, final Instant expiry) {
+        final SecretKey key = new SecretKeySpec(SECRET_BYTES, "HmacSHA256");
         return Jwts.builder()
                 .subject("alice")
-                .issuedAt(now)
-                .expiration(expiry)
+                .issuedAt(Date.from(Instant.now()))
+                .expiration(Date.from(expiry))
                 .claim("scope", scope)
                 .signWith(key)
                 .compact();

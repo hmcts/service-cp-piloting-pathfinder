@@ -24,7 +24,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @ConditionalOnProperty(name = "auth.provider", havingValue = StubOAuthFilter.STUB_AUTH_PROVIDER)
 @Slf4j
 public class StubOAuthFilter extends OncePerRequestFilter {
-    public final static String STUB_AUTH_PROVIDER = "oauth-stub";
+    public static final String STUB_AUTH_PROVIDER = "oauth-stub";
     public static final String AUTHORIZATION_HEADER = "Authorization";
 
     private final JWTService jwtService;
@@ -55,7 +55,7 @@ public class StubOAuthFilter extends OncePerRequestFilter {
         try {
             final AuthDetails extractedToken = jwtService.extract(jwt);
 
-            AuthDetails requestScopedToken = jwtProvider.getObject(); // current request instance
+            final AuthDetails requestScopedToken = jwtProvider.getObject(); // current request instance
             requestScopedToken.setUserName(extractedToken.getUserName());
             requestScopedToken.setScope(extractedToken.getScope());
             log.info("Authenticated user {} with scope {}", extractedToken.getUserName(), extractedToken.getScope());

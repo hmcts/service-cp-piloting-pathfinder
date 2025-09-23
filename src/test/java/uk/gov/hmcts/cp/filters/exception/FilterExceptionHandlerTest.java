@@ -1,10 +1,6 @@
 package uk.gov.hmcts.cp.filters.exception;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -18,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 
 class FilterExceptionHandlerTest {
 
@@ -41,9 +38,9 @@ class FilterExceptionHandlerTest {
     }
 
     @Test
-    void shouldHandleHttpClientErrorExceptionWithUnauthorized() throws IOException, ServletException {
+    void should_handle_http_client_error_exception_with_unauthorized() throws IOException, ServletException {
         // Given
-        HttpClientErrorException exception = new HttpClientErrorException(HttpStatus.UNAUTHORIZED, "No jwt token passed");
+        final HttpClientErrorException exception = new HttpClientErrorException(HttpStatus.UNAUTHORIZED, "No jwt token passed");
         doThrow(exception).when(mockFilterChain).doFilter(mockRequest, mockResponse);
 
         // When
@@ -55,14 +52,15 @@ class FilterExceptionHandlerTest {
         verify(mockResponse).setCharacterEncoding("UTF-8");
         
         printWriter.flush();
-        String responseBody = responseWriter.toString();
-        assertEquals("{\"error\":\"401\",\"message\":\"No jwt token passed\"}", responseBody);
+        final String responseBody = responseWriter.toString();
+        assertThatJson(responseBody)
+                .isEqualTo("{\"error\":\"401\",\"message\":\"No jwt token passed\"}");
     }
 
     @Test
-    void shouldHandleHttpClientErrorExceptionWithBadRequest() throws IOException, ServletException {
+    void should_handle_http_client_error_exception_with_bad_request() throws IOException, ServletException {
         // Given
-        HttpClientErrorException exception = new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Invalid JWT token");
+        final HttpClientErrorException exception = new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Invalid JWT token");
         doThrow(exception).when(mockFilterChain).doFilter(mockRequest, mockResponse);
 
         // When
@@ -74,14 +72,15 @@ class FilterExceptionHandlerTest {
         verify(mockResponse).setCharacterEncoding("UTF-8");
         
         printWriter.flush();
-        String responseBody = responseWriter.toString();
-        assertEquals("{\"error\":\"400\",\"message\":\"Invalid JWT token\"}", responseBody);
+        final String responseBody = responseWriter.toString();
+        assertThatJson(responseBody)
+                .isEqualTo("{\"error\":\"400\",\"message\":\"Invalid JWT token\"}");
     }
 
     @Test
-    void shouldHandleGenericException() throws IOException, ServletException {
+    void should_handle_generic_exception() throws IOException, ServletException {
         // Given
-        RuntimeException exception = new RuntimeException("Unexpected error");
+        final RuntimeException exception = new RuntimeException("Unexpected error");
         doThrow(exception).when(mockFilterChain).doFilter(mockRequest, mockResponse);
 
         // When
@@ -93,12 +92,13 @@ class FilterExceptionHandlerTest {
         verify(mockResponse).setCharacterEncoding("UTF-8");
         
         printWriter.flush();
-        String responseBody = responseWriter.toString();
-        assertEquals("{\"error\":\"500\",\"message\":\"Internal server error: Unexpected error\"}", responseBody);
+        final String responseBody = responseWriter.toString();
+        assertThatJson(responseBody)
+                .isEqualTo("{\"error\":\"500\",\"message\":\"Internal server error: Unexpected error\"}");
     }
 
     @Test
-    void shouldPassThroughWhenNoException() throws IOException, ServletException {
+    void should_pass_through_when_no_exception() throws IOException, ServletException {
         // When
         filterExceptionHandler.doFilter(mockRequest, mockResponse, mockFilterChain);
 

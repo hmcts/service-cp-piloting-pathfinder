@@ -24,7 +24,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @ConditionalOnProperty(name = "auth.provider", havingValue = "jwt", matchIfMissing = true)
 @Slf4j
 public class JWTFilter extends OncePerRequestFilter {
-    public final static String JWT_TOKEN_HEADER = "jwt";
+    public static final String JWT_TOKEN_HEADER = "jwt";
     public static final String AUTHORIZATION_HEADER = "Authorization";
 
     private final JWTService jwtService;
@@ -57,7 +57,7 @@ public class JWTFilter extends OncePerRequestFilter {
         try {
             final AuthDetails extractedToken = jwtService.extract(jwt);
 
-            AuthDetails requestScopedToken = jwtProvider.getObject(); // current request instance
+            final AuthDetails requestScopedToken = jwtProvider.getObject(); // current request instance
             requestScopedToken.setUserName(extractedToken.getUserName());
             requestScopedToken.setScope(extractedToken.getScope());
             log.info("Authenticated user {} with scope {}", extractedToken.getUserName(), extractedToken.getScope());
@@ -71,11 +71,7 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(final HttpServletRequest request) {
         // Skip filtering entirely when disabled, and for specific paths
-        if (!jwFilterEnabled) {
-            return true;
-        }
-
-        return Stream.of("/health")
+        return !jwFilterEnabled || Stream.of("/health")
                 .anyMatch(p -> pathMatcher.match(p, request.getRequestURI()));
     }
 }

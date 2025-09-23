@@ -19,10 +19,11 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 class JWTFilterDisabledIntegrationTest {
 
     @Resource
-    MockMvc mockMvc;
+    private MockMvc mockMvc;
 
     @DisplayName("JWT filter should not complain of missing JWT when the filter is disabled")
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void shouldNotFailWhenTokenIsMissingAndFilterIsDisabled() throws Exception {
         mockMvc
                 .perform(

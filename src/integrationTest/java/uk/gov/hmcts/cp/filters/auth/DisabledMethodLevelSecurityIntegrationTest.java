@@ -11,10 +11,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest(properties = {"auth.provider = oauth-RS256", "auth.enable.method.security = false"})
 @AutoConfigureMockMvc
-public class DisabledMethodLevelSecurityIntegrationTest extends WireMockTestSetup {
+class DisabledMethodLevelSecurityIntegrationTest extends WireMockTestSetup {
 
     @Resource
-    SecureService securedService;
+    private SecureService securedService;
 
     @Test
     void should_access_secure_method_When_method_level_security_is_off() {

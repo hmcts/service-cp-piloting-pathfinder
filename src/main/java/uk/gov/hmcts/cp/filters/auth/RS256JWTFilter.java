@@ -28,7 +28,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @ConditionalOnProperty(name = "auth.provider", havingValue = RS256JWTFilter.OAUTH_RESOURCE_SERVER_AUTH_PROVIDER)
 @Slf4j
 public class RS256JWTFilter extends OncePerRequestFilter {
-    public final static String OAUTH_RESOURCE_SERVER_AUTH_PROVIDER = "oauth-RS256";
+    public static final String OAUTH_RESOURCE_SERVER_AUTH_PROVIDER = "oauth-RS256";
     public static final String AUTHORIZATION_HEADER = "Authorization";
 
     private final PathMatcher pathMatcher;
@@ -61,7 +61,7 @@ public class RS256JWTFilter extends OncePerRequestFilter {
         final Jwt decodedJWT = rs256OAuthSecurityConfig.jwtDecoder().decode(jwt);
         log.info("decodedJWT claims {}", decodedJWT.getClaims());
 
-        AuthDetails requestScopedToken = jwtProvider.getObject(); // current request instance
+        final AuthDetails requestScopedToken = jwtProvider.getObject(); // current request instance
         requestScopedToken.setUserName(decodedJWT.getSubject());
         requestScopedToken.setScope(decodedJWT.getClaimAsString("scope"));
         log.info("Authenticated user {} with scope {}", requestScopedToken.getUserName(), requestScopedToken.getScope());

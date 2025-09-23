@@ -5,8 +5,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.hmcts.cp.filters.auth.JWTFilter.JWT_TOKEN_HEADER;
 
-import java.time.Duration;
-import java.util.Date;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
@@ -20,14 +20,15 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 class JWTFilterIntegrationTest {
 
     @Resource
-    MockMvc mockMvc;
+    private MockMvc mockMvc;
 
     @Resource
     private JWTService jwtService;
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void should_pass_when_token_is_valid() throws Exception {
-        String jwtToken = jwtService.createToken();
+        final String jwtToken = jwtService.createToken();
         mockMvc
                 .perform(
                         MockMvcRequestBuilders.get("/")
@@ -39,6 +40,7 @@ class JWTFilterIntegrationTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void should_reject_missing_token() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/"))
                 .andExpectAll(
@@ -48,8 +50,9 @@ class JWTFilterIntegrationTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void should_reject_expired_token() throws Exception {
-        String expiredJwtToken = jwtService.createToken(Date.from(new Date().toInstant().minus(Duration.ofHours(1))));
+        final String expiredJwtToken = jwtService.createToken(Instant.now().minus(1, ChronoUnit.HOURS));
         mockMvc.perform(MockMvcRequestBuilders.get("/").header(JWT_TOKEN_HEADER, expiredJwtToken))
                 .andExpectAll(
                         status().isUnauthorized(),

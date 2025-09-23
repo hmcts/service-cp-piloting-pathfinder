@@ -23,7 +23,7 @@ public class RS256OAuthSecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain rs256SecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain rs256SecurityFilterChain(final HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
             .requestMatchers("/health").permitAll()
             .anyRequest().authenticated()

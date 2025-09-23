@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,8 +24,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @SpringBootTest(properties = {"filter.enable=false"})
 @Slf4j
-public class TracingIntegrationTest {
+class TracingIntegrationTest {
 
+    public static final String TRACE_ID = "traceId";
+    public static final String SPAN_ID = "spanId";
+    public static final String LOGGER_NAME = "logger_name";
+    public static final String MESSAGE = "message";
     @Value("${spring.application.name}")
     private String springApplicationName;
 
@@ -40,43 +45,43 @@ public class TracingIntegrationTest {
 
     @Test
     void incoming_request_should_add_new_tracing() throws Exception {
-        ByteArrayOutputStream capturedStdOut = captureStdOut();
+        final ByteArrayOutputStream capturedStdOut = captureStdOut();
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        String logMessage = capturedStdOut.toString();
-        Map<String, Object> capturedFields = new ObjectMapper().readValue(logMessage, new TypeReference<>() {
+        final String logMessage = capturedStdOut.toString(Charset.defaultCharset());
+        final Map<String, Object> capturedFields = new ObjectMapper().readValue(logMessage, new TypeReference<>() {
         });
-        assertThat(capturedFields.get("traceId")).isNotNull();
-        assertThat(capturedFields.get("spanId")).isNotNull();
-        assertThat(capturedFields.get("logger_name")).isEqualTo("uk.gov.hmcts.cp.controllers.RootController");
-        assertThat(capturedFields.get("message")).isEqualTo("START");
+        assertThat(capturedFields.get(TRACE_ID)).isNotNull();
+        assertThat(capturedFields.get(SPAN_ID)).isNotNull();
+        assertThat(capturedFields.get(LOGGER_NAME)).isEqualTo("uk.gov.hmcts.cp.controllers.RootController");
+        assertThat(capturedFields.get(MESSAGE)).isEqualTo("START");
     }
 
     @Test
     void incoming_request_with_traceId_should_pass_through() throws Exception {
-        ByteArrayOutputStream capturedStdOut = captureStdOut();
-        MvcResult result = mockMvc.perform(get("/")
-                        .header("traceId", "1234-1234")
-                        .header("spanId", "567-567"))
+        final ByteArrayOutputStream capturedStdOut = captureStdOut();
+        final MvcResult result = mockMvc.perform(get("/")
+                        .header(TRACE_ID, "1234-1234")
+                        .header(SPAN_ID, "567-567"))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        String logMessage = capturedStdOut.toString();
-        Map<String, Object> capturedFields = new ObjectMapper().readValue(logMessage, new TypeReference<>() {
+        final String logMessage = capturedStdOut.toString(Charset.defaultCharset());
+        final Map<String, Object> capturedFields = new ObjectMapper().readValue(logMessage, new TypeReference<>() {
         });
-        assertThat(capturedFields.get("traceId")).isEqualTo("1234-1234");
-        assertThat(capturedFields.get("spanId")).isEqualTo("567-567");
+        assertThat(capturedFields.get(TRACE_ID)).isEqualTo("1234-1234");
+        assertThat(capturedFields.get(SPAN_ID)).isEqualTo("567-567");
         assertThat(capturedFields.get("applicationName")).isEqualTo(springApplicationName);
 
-        assertThat(result.getResponse().getHeader("traceId")).isEqualTo(capturedFields.get("traceId"));
-        assertThat(result.getResponse().getHeader("spanId")).isEqualTo(capturedFields.get("spanId"));
+        assertThat(result.getResponse().getHeader(TRACE_ID)).isEqualTo(capturedFields.get(TRACE_ID));
+        assertThat(result.getResponse().getHeader(SPAN_ID)).isEqualTo(capturedFields.get(SPAN_ID));
     }
 
     private ByteArrayOutputStream captureStdOut() {
         final ByteArrayOutputStream capturedStdOut = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(capturedStdOut));
+        System.setOut(new PrintStream(capturedStdOut, false, Charset.defaultCharset()));
         return capturedStdOut;
     }
 }

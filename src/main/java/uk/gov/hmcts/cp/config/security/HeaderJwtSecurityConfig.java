@@ -11,7 +11,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class HeaderJwtSecurityConfig {
 
     @Bean
-    public SecurityFilterChain jwtModeSecurityChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain jwtModeSecurityChain(final HttpSecurity http) throws Exception {
         // In header-JWT mode, authorization is handled by JWTFilter; allow requests through here
         http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
         return http.build();

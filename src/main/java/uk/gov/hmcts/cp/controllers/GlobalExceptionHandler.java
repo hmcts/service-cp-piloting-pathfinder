@@ -41,10 +41,10 @@ public class GlobalExceptionHandler {
         String customMessage = httpClientErrorException.getResponseBodyAsString();
         if (customMessage.isEmpty()) {
             // If no response body, try to extract custom message from the exception message
-            String fullMessage = httpClientErrorException.getMessage();
+            final String fullMessage = httpClientErrorException.getMessage();
             if (fullMessage != null && fullMessage.contains(" ")) {
                 // Remove the status code prefix (e.g., "401 " from "401 No Bearer token passed")
-                customMessage = fullMessage.substring(fullMessage.indexOf(" ") + 1);
+                customMessage = fullMessage.substring(fullMessage.indexOf(' ') + 1);
             } else {
                 customMessage = fullMessage;
             }

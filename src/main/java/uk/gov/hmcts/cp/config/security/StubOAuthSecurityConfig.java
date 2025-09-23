@@ -20,14 +20,14 @@ import org.springframework.security.web.SecurityFilterChain;
 public class StubOAuthSecurityConfig {
 
     @Bean
-    public JwtDecoder jwtDecoder(@Value("${JWT_SECRET_KEY}") String base64Secret) {
-        byte[] keyBytes = Base64.getDecoder().decode(base64Secret);
-        SecretKey key = new SecretKeySpec(keyBytes, "HmacSHA256");
+    public JwtDecoder jwtDecoder(final @Value("${JWT_SECRET_KEY}") String base64Secret) {
+        final byte[] keyBytes = Base64.getDecoder().decode(base64Secret);
+        final SecretKey key = new SecretKeySpec(keyBytes, "HmacSHA256");
         return NimbusJwtDecoder.withSecretKey(key).build();
     }
 
     @Bean
-    public SecurityFilterChain mockOauthSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain mockOauthSecurityFilterChain(final HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
             .requestMatchers("/health").permitAll()
             .anyRequest().authenticated()
