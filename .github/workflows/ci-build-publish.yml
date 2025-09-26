@@ -217,23 +217,70 @@ jobs:
             BASE_IMAGE=openjdk:21-jdk-slim
             JAR_FILENAME=${{ needs.Build.outputs.artefact_name }}.jar
 
+  # Deploy:
+  #   needs: [ Provider-Deploy, Build, Artefact-Version ]
+  #   if: ${{ inputs.trigger_deploy }}
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Extract repo name
+  #       run: echo "REPO_NAME=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
+
+  #     - name: Trigger ADO pipeline
+  #       uses: hmcts/trigger-ado-pipeline@v1
+  #       with:
+  #         pipeline_id: 460
+  #         ado_pat: ${{ secrets.HMCTS_ADO_PAT }}
+  #         template_parameters: >
+  #           {
+  #             "GROUP_ID": "uk.gov.hmcts.cp",
+  #             "ARTIFACT_ID": "${{ env.REPO_NAME }}",
+  #             "ARTIFACT_VERSION": "${{ needs.Artefact-Version.outputs.artefact_version }}",
+  #             "TARGET_REPOSITORY": "${{ github.repository }}"
+  #           }
+
   Deploy:
     needs: [ Provider-Deploy, Build, Artefact-Version ]
     if: ${{ inputs.trigger_deploy }}
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
-      - name: Extract repo name
-        run: echo "REPO_NAME=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
+      - name: Checkout code
+        uses: actions/checkout@v5
 
-      - name: Trigger ADO pipeline
-        uses: hmcts/trigger-ado-pipeline@v1
+
+      - name: Set today date and time
+        run: echo "TODAY_DATETIME=$(date +'%Y-%m-%d-%H%M%S')" >> $GITHUB_ENV
+ 
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
         with:
-          pipeline_id: 460
-          ado_pat: ${{ secrets.HMCTS_ADO_PAT }}
-          template_parameters: >
-            {
-              "GROUP_ID": "uk.gov.hmcts.cp",
-              "ARTIFACT_ID": "${{ env.REPO_NAME }}",
-              "ARTIFACT_VERSION": "${{ needs.Artefact-Version.outputs.artefact_version }}",
-              "TARGET_REPOSITORY": "${{ github.repository }}"
-            }
+          client-id: ${{ secrets.AZURE_APM_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+
+      - name: Log in to Azure Container Registry (OIDC)
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          client-id: ${{ secrets.AZURE_APM_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and Push Docker Image to ACR
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.ACR_LOGIN_SERVER }}/hmcts/${{ github.repository }}-service:${{ needs.Artefact-Version.outputs.artefact_version }_${{ env.TODAY_DATETIME }}
+ 
+
+          build-args: |
+            BASE_IMAGE=openjdk:21-jdk-slim
+            JAR_FILENAME=${{ needs.Build.outputs.artefact_name }}.jar
+ 
