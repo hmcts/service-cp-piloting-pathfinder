@@ -1,5 +1,13 @@
 package uk.gov.hmcts.cp.logging;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.charset.Charset;
+import java.util.Map;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -8,16 +16,9 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 @SpringBootTest
 @Slf4j
-public class SpringLoggingIntegrationTest {
+class SpringLoggingIntegrationTest {
 
     private PrintStream originalStdOut = System.out;
 
@@ -29,10 +30,10 @@ public class SpringLoggingIntegrationTest {
     @Test
     void springboot_test_should_log_correct_fields() throws IOException {
         MDC.put("any-mdc-field", "1234-1234");
-        ByteArrayOutputStream capturedStdOut = captureStdOut();
+        final ByteArrayOutputStream capturedStdOut = captureStdOut();
         log.info("spring boot test message");
 
-        Map<String, Object> capturedFields = new ObjectMapper().readValue(capturedStdOut.toString(), new TypeReference<>() {
+        final Map<String, Object> capturedFields = new ObjectMapper().readValue(capturedStdOut.toString(Charset.defaultCharset()), new TypeReference<>() {
         });
 
         assertThat(capturedFields.get("any-mdc-field")).isEqualTo("1234-1234");
@@ -45,7 +46,7 @@ public class SpringLoggingIntegrationTest {
 
     private ByteArrayOutputStream captureStdOut() {
         final ByteArrayOutputStream capturedStdOut = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(capturedStdOut));
+        System.setOut(new PrintStream(capturedStdOut, false, Charset.defaultCharset()));
         return capturedStdOut;
     }
 }

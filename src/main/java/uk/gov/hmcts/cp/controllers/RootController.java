@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static org.springframework.http.ResponseEntity.ok;
 
-import uk.gov.hmcts.cp.filters.jwt.AuthDetails;
+import uk.gov.hmcts.cp.filters.auth.AuthDetails;
 
 /**
  * Default endpoints per application.
@@ -19,7 +19,7 @@ import uk.gov.hmcts.cp.filters.jwt.AuthDetails;
 public class RootController {
 
     // request scope bean
-    AuthDetails jwtToken;
+    private AuthDetails jwtToken;
 
     /**
      * Root GET endpoint.

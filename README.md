@@ -73,7 +73,13 @@ pmd check \
     -r build/reports/pmd/pmd-report.html
 ```
 
-See also: [JWTFilter documentation](docs/JWTFilter.md)
+## Authentication
+
+This service supports multiple authentication providers. See the authentication documentation for details:
+
+- **[Authentication Documentation](docs/Authentication.md)** - Complete authentication guide
+- **[Quick Reference](docs/QuickReference.md)** - Quick reference for developers
+- **[JWTFilter Documentation](docs/JWTFilter.md)** - JWT filter specific documentation
 
 ## License
 

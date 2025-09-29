@@ -1,6 +1,8 @@
-package uk.gov.hmcts.cp.filters.jwt;
+package uk.gov.hmcts.cp.filters.auth;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 import javax.crypto.SecretKey;
@@ -27,59 +29,61 @@ public class JWTService {
 
     private final String secretKey;
 
-    public JWTService(@Value("${jwt.secretKey}") String secretKey) {
+    public JWTService(final @Value("${auth.jwt.secretKey}") String secretKey) {
         this.secretKey = secretKey;
     }
 
-    public AuthDetails extract(String token) throws InvalidJWTException {
+    public AuthDetails extract(final String token) throws InvalidJWTException {
         try {
             final Claims claims = Jwts.parser()
-                    .verifyWith((getSecretSigningKey()))
+                    .verifyWith(getSecretSigningKey())
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
-            String userName = claims.getSubject();
-            String scope = claims.get(SCOPE).toString();
+            final String userName = claims.getSubject();
+            final String scope = claims.get(SCOPE).toString();
             return new AuthDetails(userName, scope);
         } catch (SignatureException ex) {
-            log.error("Invalid signature/claims", ex);
+            log.error("Invalid signature/claims {}", ex.toString(), ex);
             throw new InvalidJWTException("Invalid signature:" + ex.getMessage());
         } catch (ExpiredJwtException ex) {
-            log.error("Expired tokens", ex);
+            log.error("Expired tokens {}", ex.toString(), ex);
             throw new InvalidJWTException("Expired tokens:" + ex.getMessage());
         } catch (UnsupportedJwtException ex) {
-            log.error("Unsupported token", ex);
+            log.error("Unsupported token {}", ex.getMessage());
             throw new InvalidJWTException("Unsupported token:" + ex.getMessage());
         } catch (MalformedJwtException ex) {
-            log.error("Malformed token", ex);
+            log.error("Malformed token {}", ex.toString(), ex);
             throw new InvalidJWTException("Malformed token:" + ex.getMessage());
         } catch (IllegalArgumentException ex) {
-            log.error("JWT token is empty", ex);
+            log.error("JWT token is empty {}", ex.toString(), ex);
             throw new InvalidJWTException("JWT token is empty:" + ex.getMessage());
         } catch (Exception ex) {
-            log.error("Could not verify JWT token integrity", ex);
+            log.error("Could not verify JWT token integrity {}", ex.toString(), ex);
             throw new InvalidJWTException("Could not validate JWT:" + ex.getMessage());
         }
     }
 
-    public String createToken() {
+    public String createToken(final Instant expiry) {
         return Jwts.builder()
                 .subject(USER)
-                .issuedAt(new Date())
+                .issuedAt(Date.from(Instant.now()))
                 .claim(SCOPE, "read write")
-                .expiration(expiryDateAfterOneHour())
+                .expiration(Date.from(expiry))
                 .signWith(getSecretSigningKey())
                 .compact();
     }
 
+    public String createToken() {
+        return createToken(expiryAfterOneHour());
+    }
+
     private SecretKey getSecretSigningKey() {
-        byte[] keyBytes = Decoders.BASE64URL.decode(secretKey);
+        final byte[] keyBytes = Decoders.BASE64URL.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    private Date expiryDateAfterOneHour() {
-        return Date.from(new Date().toInstant().plus(ONE_HOUR));
+    private Instant expiryAfterOneHour() {
+        return Instant.now().plus(1, ChronoUnit.HOURS);
     }
-
-
 }

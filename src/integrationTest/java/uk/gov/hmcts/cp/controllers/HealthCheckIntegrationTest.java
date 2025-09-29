@@ -21,6 +21,7 @@ class HealthCheckIntegrationTest {
 
     @DisplayName("Actuator health status should be UP and not require JWT")
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void shouldCallActuatorAndGet200() throws Exception {
         mockMvc.perform(get("/health"))
                 .andDo(print())
