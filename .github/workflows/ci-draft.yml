@@ -18,7 +18,7 @@ jobs:
       AZURE_DEVOPS_ARTIFACT_TOKEN: ${{ secrets.AZURE_DEVOPS_ARTIFACT_TOKEN }}
       HMCTS_ADO_PAT: ${{ secrets.HMCTS_ADO_PAT }}
       PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
-      AZURE_APM_CLIENT_ID: {{secrets.AZURE_APM_CLIENT_ID }}
+      AZURE_APM_CLIENT_ID: ${{secrets.AZURE_APM_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
     with:
       is_publish: ${{ github.event_name == 'push' }}
