@@ -237,27 +237,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Assert Azure Variables
-        run: |
-          if [ -z "${{ secrets.AZURE_APM_CLIENT_ID }}" ]; then
-            echo "Error: AZURE_APM_CLIENT_ID is not set"
-#            exit 1
-          else
-            echo "AZURE_APM_CLIENT_ID is set"
-          fi
-          if [ -z "${{ secrets.AZURE_TENANT_ID }}" ]; then
-            echo "Error: AZURE_TENANT_ID is not set"
-#            exit 1
-          else
-            echo "AZURE_TENANT_ID is set"
-          fi
-#          if [ -z "${{ secrets.ACR_LOGIN_SERVER }}" ]; then
-#            echo "Error: ACR_LOGIN_SERVER is not set"
-##            exit 1
-#          else
-#            echo "ACR_LOGIN_SERVER is set"
-#          fi
-
       - name: Azure Login (OIDC)
         uses: azure/login@v2
         with:
