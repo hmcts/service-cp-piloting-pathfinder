@@ -181,7 +181,9 @@ jobs:
             -DAZURE_DEVOPS_ARTIFACT_USERNAME=$AZURE_DEVOPS_ARTIFACT_USERNAME \
             -DAZURE_DEVOPS_ARTIFACT_TOKEN=$AZURE_DEVOPS_ARTIFACT_TOKEN
 
-  Build-Docker:
+  # NOTE: this is technically not needed but can be useful to have the image in a convenient place
+  # especially for testing purposes. The image used in ADO deployment is pushed directly to ACR
+  Build-Publish-GitHub:
     needs: [ Provider-Deploy, Build, Artefact-Version ]
     if: ${{ inputs.trigger_docker }}
     runs-on: ubuntu-latest
@@ -217,28 +219,7 @@ jobs:
             BASE_IMAGE=openjdk:21-jdk-slim
             JAR_FILENAME=${{ needs.Build.outputs.artefact_name }}.jar
 
-  # Deploy:
-  #   needs: [ Provider-Deploy, Build, Artefact-Version ]
-  #   if: ${{ inputs.trigger_deploy }}
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Extract repo name
-  #       run: echo "REPO_NAME=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
-
-  #     - name: Trigger ADO pipeline
-  #       uses: hmcts/trigger-ado-pipeline@v1
-  #       with:
-  #         pipeline_id: 460
-  #         ado_pat: ${{ secrets.HMCTS_ADO_PAT }}
-  #         template_parameters: >
-  #           {
-  #             "GROUP_ID": "uk.gov.hmcts.cp",
-  #             "ARTIFACT_ID": "${{ env.REPO_NAME }}",
-  #             "ARTIFACT_VERSION": "${{ needs.Artefact-Version.outputs.artefact_version }}",
-  #             "TARGET_REPOSITORY": "${{ github.repository }}"
-  #           }
-
-  Deploy:
+  Build-Publish-Azure:
     needs: [ Provider-Deploy, Build, Artefact-Version ]
     if: ${{ inputs.trigger_deploy }}
     runs-on: ubuntu-latest
@@ -249,11 +230,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-
-      - name: Set today date and time
-        run: echo "TODAY_DATETIME=$(date +'%Y-%m-%d-%H%M%S')" >> $GITHUB_ENV
- 
-
       - name: Azure Login (OIDC)
         uses: azure/login@v2
         with:
@@ -261,6 +237,8 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Log in to Azure Container Registry (OIDC)
         uses: azure/docker-login@v2
@@ -270,17 +248,17 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Build and Push Docker Image to ACR
+      - name: Set today date and time
+        run: echo "TODAY_DATETIME=$(date +'%Y-%m-%d-%H%M%S')" >> $GITHUB_ENV
+
+      - name: Build and Push Docker Image to GitHub
         uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile
           push: true
           tags: |
-            ${{ secrets.ACR_LOGIN_SERVER }}/hmcts/${{ github.repository }}-service:${{ needs.Artefact-Version.outputs.artefact_version }_${{ env.TODAY_DATETIME }}
- 
-
+            ${{ secrets.ACR_LOGIN_SERVER }}/hmcts/${{ github.repository }}-service:${{ needs.Artefact-Version.outputs.artefact_version }}_${{ env.TODAY_DATETIME }}
           build-args: |
             BASE_IMAGE=openjdk:21-jdk-slim
             JAR_FILENAME=${{ needs.Build.outputs.artefact_name }}.jar
- 
