@@ -264,7 +264,7 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            ${{ secrets.ACR_LOGIN_SERVER }}/hmcts/${{ github.repository }}-service:${{ needs.Artefact-Version.outputs.artefact_version }}_${{ env.TODAY_DATETIME }}
+            ${{ secrets.ACR_LOGIN_SERVER }}/${{ github.repository }}-service:${{ needs.Artefact-Version.outputs.artefact_version }}_${{ env.TODAY_DATETIME }}
           build-args: |
             BASE_IMAGE=openjdk:21-jdk-slim
             JAR_FILENAME=${{ needs.Build.outputs.artefact_name }}.jar
