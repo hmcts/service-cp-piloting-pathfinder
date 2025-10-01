@@ -17,6 +17,8 @@ on:
         required: true
       AZURE_SUBSCRIPTION_ID:
         required: true
+      ACR_LOGIN_SERVER:
+        required: true
     inputs:
       is_release:
         required: false

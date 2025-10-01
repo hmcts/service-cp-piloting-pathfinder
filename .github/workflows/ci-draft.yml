@@ -21,6 +21,7 @@ jobs:
       AZURE_APM_CLIENT_ID: ${{secrets.AZURE_APM_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
     with:
       is_publish: ${{ github.event_name == 'push' }}
       trigger_docker: ${{ github.event_name == 'push' }}
