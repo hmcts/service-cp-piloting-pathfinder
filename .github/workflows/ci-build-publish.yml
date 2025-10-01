@@ -238,6 +238,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
+      - name: Download JAR Artefact
+        uses: actions/download-artifact@v5
+        with:
+          name: app-jar
+          path: build/libs
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -247,14 +253,6 @@ jobs:
           client-id: ${{ secrets.AZURE_APM_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-#      - name: Log in to Azure Container Registry (OIDC)
-#        uses: azure/docker-login@v2
-#        with:
-#          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
-##          client-id: ${{ secrets.AZURE_APM_CLIENT_ID }}
-##          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-##          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Set today date and time
         run: echo "TODAY_DATETIME=$(date +'%Y-%m-%d-%H%M%S')" >> $GITHUB_ENV
