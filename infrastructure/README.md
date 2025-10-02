@@ -29,7 +29,6 @@ The key files are detailed here
 
 
 # Template files
-template/api.json - 163 lines seems to be the bulk of the config
 Defines the following parameters
 apiManagementServiceName
 apiName
@@ -37,11 +36,6 @@ apiProductName
 serviceUrl
 apiBasePath
 policy
-
-Sets the following parameters
-"displayName": "bulk-scanning payments API", // line80
-
-"urlTemplate": "/bulk-scan-payment", // line99
 
 
 template/cft-api-policy.xml
