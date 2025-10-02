@@ -257,6 +257,11 @@ jobs:
       - name: Set today date and time
         run: echo "TODAY_DATETIME=$(date +'%Y-%m-%d-%H%M%S')" >> $GITHUB_ENV
 
+      - name: demo
+        run: |
+          az account show
+          az group list --output table
+          
       - name: Verify Azure Login
         run: |
           az acr login --name ${{ secrets.ACR_LOGIN_SERVER }}
