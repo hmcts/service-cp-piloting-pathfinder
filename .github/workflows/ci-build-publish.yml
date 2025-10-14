@@ -11,7 +11,11 @@ on:
         required: true
       PACT_BROKER_TOKEN:
         required: true
-      AZURE_APM_CLIENT_ID:
+      AZURE_ACR_SP_CLIENT_ID:
+        required: true
+      AZURE_CLIENT_ID:
+        required: true
+      AZURE_SECRET_ID:
         required: true
       AZURE_TENANT_ID:
         required: true
@@ -250,7 +254,7 @@ jobs:
       - name: Azure Login (OIDC)
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CP_ACR_SP_CLIENT_ID }}
+          client-id: ${{ secrets.AZURE_ACR_SP_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
@@ -258,8 +262,8 @@ jobs:
         uses: azure/docker-login@v2
         with:
           login-server: ${{ secrets.ACR_LOGIN_SERVER }}
-          username: ${{ secrets.AZURE_CP_CLIENT_ID }}
-          password: ${{ secrets.AZURE_CP_SECRET_ID }}
+          username: ${{ secrets.AZURE_CLIENT_ID }}
+          password: ${{ secrets.AZURE_SECRET_ID }}
 
       - name: Set today date and time
         run: echo "TODAY_DATETIME=$(date +'%Y-%m-%d-%H%M%S')" >> $GITHUB_ENV
