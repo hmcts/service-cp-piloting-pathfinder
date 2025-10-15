@@ -11,6 +11,18 @@ on:
         required: true
       PACT_BROKER_TOKEN:
         required: true
+      AZURE_ACR_SP_CLIENT_ID:
+        required: true
+      AZURE_CLIENT_ID:
+        required: true
+      AZURE_SECRET_ID:
+        required: true
+      AZURE_TENANT_ID:
+        required: true
+      AZURE_SUBSCRIPTION_ID:
+        required: true
+      ACR_LOGIN_SERVER:
+        required: true
     inputs:
       is_release:
         required: false
@@ -181,12 +193,55 @@ jobs:
             -DAZURE_DEVOPS_ARTIFACT_USERNAME=$AZURE_DEVOPS_ARTIFACT_USERNAME \
             -DAZURE_DEVOPS_ARTIFACT_TOKEN=$AZURE_DEVOPS_ARTIFACT_TOKEN
 
-  Build-Docker:
+  # NOTE: this is technically not needed but can be useful to have the image in a convenient place
+  # especially for testing purposes. The image used in ADO deployment is pushed directly to ACR
+#  Build-Publish-GitHub:
+#    needs: [ Provider-Deploy, Build, Artefact-Version ]
+#    if: ${{ inputs.trigger_docker }}
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout Code
+#        uses: actions/checkout@v5
+#
+#      - name: Download JAR Artefact
+#        uses: actions/download-artifact@v5
+#        with:
+#          name: app-jar
+#          path: build/libs
+#
+#      - name: Set up Docker Buildx
+#        uses: docker/setup-buildx-action@v3
+#
+#      - name: Log in to GitHub Packages
+#        uses: docker/login-action@v3
+#        with:
+#          registry: ghcr.io
+#          username: ${{ github.actor }}
+#          password: ${{ secrets.GITHUB_TOKEN }}
+#
+#      - name: Build and Push Docker Image to GitHub
+#        uses: docker/build-push-action@v6
+#        with:
+#          context: .
+#          file: Dockerfile
+#          push: true
+#          tags: |
+#            ghcr.io/${{ github.repository }}:${{ needs.Artefact-Version.outputs.artefact_version }}
+#          build-args: |
+#            BASE_IMAGE=openjdk:21-jdk-slim
+#            JAR_FILENAME=${{ needs.Build.outputs.artefact_name }}.jar
+
+  Build-Publish-Azure:
     needs: [ Provider-Deploy, Build, Artefact-Version ]
-    if: ${{ inputs.trigger_docker }}
+    if: ${{ inputs.trigger_deploy }}
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}.azurecr.io
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v5
 
       - name: Download JAR Artefact
@@ -198,42 +253,51 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to GitHub Packages
-        uses: docker/login-action@v3
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          client-id: ${{ secrets.AZURE_ACR_SP_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Build and Push Docker Image to GitHub
+      - name: Get runner public IP
+        id: get_ip
+        run: |
+          echo "Fetching public IP of runner..."
+          PUBLIC_IP=$(curl -s https://api.ipify.org)
+          echo "Public IP is: $PUBLIC_IP"
+          echo "public_ip=$PUBLIC_IP" >> $GITHUB_OUTPUT
+
+      - name: Allow runner IP in ACR
+        run: |
+          echo "Adding ${{ steps.get_ip.outputs.public_ip }} to ACR network rules..."
+          az acr network-rule add \
+            --name ${{ secrets.ACR_LOGIN_SERVER }} \
+            --resource-group 'RG-MDV-INT-ACR-01' \
+            --ip-address ${{ steps.get_ip.outputs.public_ip }}/32
+      - name: Check ACR DNS resolution
+        run: |
+          echo "Checking DNS resolution for ACR..."
+          nslookup ${{ secrets.ACR_LOGIN_SERVER }}
+
+      - name: Log in to Azure Container Registry
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ env.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.AZURE_CLIENT_ID }}
+          password: ${{ secrets.AZURE_SECRET_ID }}
+
+      - name: Set today date and time
+        run: echo "TODAY_DATETIME=$(date +'%Y-%m-%d-%H%M%S')" >> $GITHUB_ENV
+
+      - name: Build and Push Docker Image to ACR
         uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:${{ needs.Artefact-Version.outputs.artefact_version }}
+            ${{ env.ACR_LOGIN_SERVER }}/${{ github.repository }}-service:${{ needs.Artefact-Version.outputs.artefact_version }}_${{ env.TODAY_DATETIME }}
           build-args: |
             BASE_IMAGE=openjdk:21-jdk-slim
             JAR_FILENAME=${{ needs.Build.outputs.artefact_name }}.jar
-
-  Deploy:
-    needs: [ Provider-Deploy, Build, Artefact-Version ]
-    if: ${{ inputs.trigger_deploy }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Extract repo name
-        run: echo "REPO_NAME=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
-
-      - name: Trigger ADO pipeline
-        uses: hmcts/trigger-ado-pipeline@v1
-        with:
-          pipeline_id: 460
-          ado_pat: ${{ secrets.HMCTS_ADO_PAT }}
-          template_parameters: >
-            {
-              "GROUP_ID": "uk.gov.hmcts.cp",
-              "ARTIFACT_ID": "${{ env.REPO_NAME }}",
-              "ARTIFACT_VERSION": "${{ needs.Artefact-Version.outputs.artefact_version }}",
-              "TARGET_REPOSITORY": "${{ github.repository }}"
-            }
